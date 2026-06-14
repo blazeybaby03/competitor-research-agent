@@ -1,0 +1,239 @@
+● All clean. Here is the complete final report.
+
+  ---
+  Backend Launch Stabilization Report — CompeteIQ
+
+  Date: 2026-06-02
+  Overall status: READY TO LAUNCH WITH FLAGS
+
+  ---
+  What Changed (Code Fixes Applied This Session)
+
+  ┌───────────────────────────────────┬───────────────────────────────────────────┬──────────────────────────────────────────┐
+  │               File                │                  Change                   │                  Reason                  │
+  ├───────────────────────────────────┼───────────────────────────────────────────┼──────────────────────────────────────────┤
+  │ app/(dashboard)/billing/page.tsx  │ Added import { redirect } + if (!user)    │ Fixes confirmed production TypeError —   │
+  │                                   │ redirect("/login") before user!.id        │ expired session caused unhandled crash   │
+  ├───────────────────────────────────┼───────────────────────────────────────────┼──────────────────────────────────────────┤
+  │ app/api/reports/generate/route.ts │ Added export const maxDuration = 60 at    │ Prevents Vercel killing the function     │
+  │                                   │ top of file                               │ before scraping + AI completes           │
+  ├───────────────────────────────────┼───────────────────────────────────────────┼──────────────────────────────────────────┤
+  │                                   │ Added all-scrapes-failed guard before AI  │ Saves Anthropic credits and gives user a │
+  │ app/api/reports/generate/route.ts │ call                                      │  clear error instead of AI hallucination │
+  │                                   │                                           │  failure                                 │
+  ├───────────────────────────────────┼───────────────────────────────────────────┼──────────────────────────────────────────┤
+  │                                   │ Wrapped client.messages.create() in       │ Converts opaque Anthropic                │
+  │ lib/ai.ts                         │ try/catch                                 │ network/timeout errors into readable     │
+  │                                   │                                           │ messages                                 │
+  └───────────────────────────────────┴───────────────────────────────────────────┴──────────────────────────────────────────┘
+
+  ---
+  Build Verification
+
+  ┌──────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────┐
+  │            Check             │                                          Result                                           │
+  ├──────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ npm install                  │ PASS                                                                                      │
+  ├──────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ npm run typecheck (tsc       │ PASS — zero errors, both before and after changes                                         │
+  │ --noEmit)                    │                                                                                           │
+  ├──────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ npm run lint (eslint)        │ PASS — zero errors                                                                        │
+  ├──────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ npm run build (next build)   │ PASS — 15/15 routes compiled clean                                                        │
+  ├──────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┤
+  │ npm audit --audit-level=high │ PASS — 0 high severity. 2 moderate (postcss via Next.js internals — unfixable without     │
+  │                              │ breaking Next.js; safe to ignore)                                                         │
+  └──────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────┘
+
+  ---
+  Evidence by Checklist Area
+
+  1. Production URL & Auth
+
+  ┌──────────────────────────────────────────────────┬─────────────┬─────────────────────────────────────────────────────────┐
+  │                      Route                       │   Status    │                        Evidence                         │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ https://competitor-research-agent-two.vercel.app │ 200 OK      │ Fetched via Vercel MCP — full HTML returned             │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ /login                                           │ 200 OK      │ 200, login form renders correctly                       │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ /signup                                          │ 200 OK      │ 200, signup form renders correctly                      │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ /dashboard (unauthenticated)                     │ 307 →       │ Confirmed in server logs and MCP fetch                  │
+  │                                                  │ /login      │                                                         │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ /billing (unauthenticated)                       │ 307 →       │ Confirmed in server logs                                │
+  │                                                  │ /login      │                                                         │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ Auth guard                                       │ SECURE      │ DashboardLayout uses supabase.auth.getUser()            │
+  │                                                  │             │ (server-side) not just cookie check                     │
+  ├──────────────────────────────────────────────────┼─────────────┼─────────────────────────────────────────────────────────┤
+  │ Auth callback                                    │ Acceptable  │ Redirects to /login?error=auth_failed on failure — no   │
+  │                                                  │             │ crash                                                   │
+  └──────────────────────────────────────────────────┴─────────────┴─────────────────────────────────────────────────────────┘
+
+  Remaining post-launch: No "Forgot password?" link on /login. The callback sets ?error=auth_failed but login page doesn't
+  display it.
+
+  ---
+  2. Supabase RLS & Trial Credit
+
+  5 migrations exist: 001 through 005.
+
+  ┌───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────┐
+  │                 Check                 │                                      Status                                      │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ Users can self-escalate               │ BLOCKED — migration 002 drops the naive update policy; 005 re-confirms no user   │
+  │ subscription_status                   │ update policy on profiles                                                        │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ WITH CHECK on businesses              │ YES                                                                              │
+  │ INSERT/UPDATE                         │                                                                                  │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ WITH CHECK on competitors             │ YES — also validates business ownership                                          │
+  │ INSERT/UPDATE                         │                                                                                  │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ WITH CHECK on reports INSERT/UPDATE   │ YES                                                                              │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ try_consume_trial_credit exists       │ YES — SECURITY DEFINER, service_role only                                        │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ restore_trial_credit exists           │ YES — SECURITY DEFINER, service_role only                                        │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ replace_competitors exists            │ YES — validates ownership via auth.uid()                                         │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ SUPABASE_SERVICE_ROLE_KEY browser     │ NONE — only used in lib/supabase/admin.ts (server-only)                          │
+  │ exposure                              │                                                                                  │
+  ├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ .env.local in .gitignore              │ YES — covered by .env*.local and .env.* patterns                                 │
+  └───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────┘
+
+  Critical manual action: Confirm migrations 002–005 are applied to the live Supabase project (yzwkvwcflnnwrcyadqzv). Run npx
+  supabase migration list --project-ref yzwkvwcflnnwrcyadqzv or check the Supabase dashboard. If only 001 is live, users can
+  currently set subscription_status = 'active' on themselves — a critical billing bypass.
+
+  ---
+  3. Stripe Live Checkout & Webhook
+
+  ┌──────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────┐
+  │                        Check                         │                           Status                            │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Stripe mode                                          │ LIVE (sk_live_ / pk_live_ confirmed)                        │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ STRIPE_GROWTH_PRICE_ID                               │ SET — price_1TdX7hFz4UuJljiF4fGn97JG                        │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ STRIPE_STARTER_PRICE_ID                              │ Not set — single-plan product, not a blocker                │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ STRIPE_WEBHOOK_SECRET                                │ Present with whsec_ prefix                                  │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Checkout rejects logged-out users                    │ YES — first action is getUser() → 401                       │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Checkout server-side price allowlist                 │ YES — arbitrary client priceId rejected with 400            │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ success_url / cancel_url                             │ Point to competitor-research-agent-two.vercel.app — correct │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Webhook verifies stripe-signature                    │ YES — constructEvent() with raw body                        │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Webhook handles subscription created/updated/deleted │ YES                                                         │
+  ├──────────────────────────────────────────────────────┼─────────────────────────────────────────────────────────────┤
+  │ Webhook uses admin client for DB writes              │ YES                                                         │
+  └──────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────┘
+
+  CRITICAL MANUAL ACTION — Stripe webhook endpoint:
+  The webhook handler code is correct, but there is no confirmed live endpoint registered in Stripe's dashboard. If unregistered,
+  users can pay successfully but subscription_status in Supabase will never update — they pay and get no access.
+
+  Do this now:
+  1. Go to stripe.com/dashboard (https://dashboard.stripe.com) → Developers → Webhooks → Add endpoint
+  2. URL: https://competitor-research-agent-two.vercel.app/api/billing/webhook
+  3. Events: customer.subscription.created, customer.subscription.updated, customer.subscription.deleted
+  4. Copy the signing secret shown — add it as STRIPE_WEBHOOK_SECRET in Vercel production env vars
+  5. Confirm STRIPE_GROWTH_PRICE_ID, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET are all set in Vercel production (not just
+  .env.local)
+
+  ---
+  4. Report Generation
+
+  Root cause of 500 errors: SCRAPERAPI_KEY is almost certainly not set in the Vercel production environment (it exists in
+  .env.local but .env.local is never deployed). When missing, every scrape returns success: false immediately, the all-failed
+  guard now fires, and the report is marked failed.
+
+  Trial credit safety: CONFIRMED SAFE — restore_trial_credit is called in the catch block when trialCreditConsumed === true.
+  Users do not lose their free trial on failure.
+
+  Code fixes applied this session:
+  - maxDuration = 60 added — function will no longer be killed prematurely by Vercel
+  - All-scrapes-failed guard added — clear user error instead of opaque AI failure
+  - Anthropic API call wrapped in try/catch — readable error messages in logs
+
+  CRITICAL MANUAL ACTION — Add SCRAPERAPI_KEY to Vercel production:
+  Go to Vercel Dashboard → competitor-research-agent → Settings → Environment Variables
+  Add: SCRAPERAPI_KEY = <value from .env.local>
+  Environment: Production
+  Then redeploy.
+
+  ---
+  5. Billing Page & Support Contact
+
+  TypeError fixed: if (!user) redirect("/login") added before the user!.id access. This eliminates the confirmed production crash
+  for expired-session users hitting /billing.
+
+  Support contact: The billing page already conditionally renders a support email via NEXT_PUBLIC_SUPPORT_EMAIL env var. The
+  BillingPortalButton component also uses it. It is currently NOT set in Vercel production, so nothing is displayed.
+
+  Manual action: Add NEXT_PUBLIC_SUPPORT_EMAIL to Vercel production env vars with your real support email (e.g.,
+  blazeybaby@pm.me). No code change needed — the UI wires are already there.
+
+  ---
+  Remaining Blockers (Must Fix Before Launch)
+
+  ┌─────┬───────────────────────────────────────────┬───────────────────────────────────────────────────────────┬───────────┐
+  │  #  │                  Blocker                  │                          Action                           │   Owner   │
+  ├─────┼───────────────────────────────────────────┼───────────────────────────────────────────────────────────┼───────────┤
+  │ P0  │ Stripe webhook endpoint not registered    │ Register endpoint in Stripe dashboard, copy signing       │ You — 5   │
+  │     │                                           │ secret to Vercel env                                      │ min       │
+  ├─────┼───────────────────────────────────────────┼───────────────────────────────────────────────────────────┼───────────┤
+  │ P0  │ SCRAPERAPI_KEY missing from Vercel        │ Add env var in Vercel dashboard, redeploy                 │ You — 2   │
+  │     │ production                                │                                                           │ min       │
+  ├─────┼───────────────────────────────────────────┼───────────────────────────────────────────────────────────┼───────────┤
+  │ P0  │ Supabase migrations 002–005 applied       │ Run npx supabase migration list --project-ref             │ You —     │
+  │     │ status unknown                            │ yzwkvwcflnnwrcyadqzv to confirm                           │ verify    │
+  ├─────┼───────────────────────────────────────────┼───────────────────────────────────────────────────────────┼───────────┤
+  │ P1  │ STRIPE_WEBHOOK_SECRET in Vercel           │ Confirm or set after webhook endpoint registration        │ You       │
+  │     │ production                                │                                                           │           │
+  ├─────┼───────────────────────────────────────────┼───────────────────────────────────────────────────────────┼───────────┤
+  │ P1  │ NEXT_PUBLIC_SUPPORT_EMAIL not set         │ Add to Vercel production env                              │ You — 1   │
+  │     │                                           │                                                           │ min       │
+  ├─────┼───────────────────────────────────────────┼───────────────────────────────────────────────────────────┼───────────┤
+  │ P1  │ Code changes not yet deployed             │ Push to main or run vercel --prod                         │ You       │
+  └─────┴───────────────────────────────────────────┴───────────────────────────────────────────────────────────┴───────────┘
+
+  ---
+  Post-Launch Tasks (Non-Blocking)
+
+  - Add "Forgot password?" link on /login page
+  - Display ?error=auth_failed message on the login page
+  - Handle invoice.payment_failed in webhook (currently subscription deletion handles eventual cancellation, but no interim
+  downgrade)
+  - Add support/contact link to landing page footer
+
+  ---
+  Refund/Cancel Steps (if a live payment was completed)
+
+  1. Stripe dashboard → Customers → find customer by email → Subscriptions → Cancel
+  2. For refund: Stripe dashboard → Payments → find charge → Refund
+  3. Manually update subscription_status to canceled in Supabase if webhook didn't fire (this will be automatic once webhook is
+  registered)
+
+  ---
+  Final Recommendation
+
+  READY TO LAUNCH after completing these 5 manual steps in order:
+
+  1. Register Stripe webhook endpoint → copy signing secret to Vercel STRIPE_WEBHOOK_SECRET
+  2. Add SCRAPERAPI_KEY to Vercel production env vars
+  3. Add NEXT_PUBLIC_SUPPORT_EMAIL to Vercel production env vars
+  4. Confirm Supabase migrations 002–005 are applied
+  5. Deploy the code changes in this session (git push to main)
+
+  All code is clean. Build is green. The only remaining items are env var and Stripe dashboard configuration that requires your
+  credentials.

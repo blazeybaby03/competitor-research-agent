@@ -1,0 +1,113 @@
+/* ============================================================
+   CompeteIQ — Design System Foundations
+   colors_and_type.css
+
+   The "Briefing Room" direction: navy authority, sky-blue brand,
+   signal-amber for opportunities, on a clean canvas. Single-font
+   Inter system tuned for data density and report readability.
+
+   Load Inter (self-host in production via next/font; here we link
+   Google Fonts — see README "Font substitution" note).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---------- BRAND / SKY ---------- */
+  --sky-50:  #f0f9ff;   /* tint wash, hover backgrounds */
+  --sky-100: #e0f2fe;
+  --sky-200: #bae6fd;
+  --sky-400: #38bdf8;
+  --sky-500: #0ea5e9;   /* sky — bright brand accent */
+  --brand:   #0284c7;   /* brand-600 — primary action */
+  --brand-700: #0369a1; /* hover / pressed primary */
+  --brand-800: #075985;
+
+  /* ---------- NAVY / INK (authority) ---------- */
+  --navy:      #0f223a; /* the Briefing Room navy — dark panels, table headers */
+  --navy-800:  #14304f;
+  --ink:       #0f172a; /* primary text */
+  --slate-800: #1e293b;
+  --slate-700: #334155;
+
+  /* ---------- NEUTRALS ---------- */
+  --bg:        #f7f8fa; /* app canvas */
+  --canvas:    #f8fafc; /* lighter section canvas */
+  --surface:   #ffffff; /* cards, panels */
+  --line:      #e4e8ee; /* hairline borders */
+  --line-soft: #eef2f7; /* inner dividers, zebra */
+  --fg1:       #0f172a; /* primary foreground */
+  --fg2:       #475569; /* secondary text */
+  --fg3:       #5b6472; /* muted / captions */
+  --fg4:       #94a3b8; /* placeholder / disabled */
+
+  /* ---------- SIGNAL / SEMANTIC ---------- */
+  --amber:        #f59e0b; /* signal amber — market gaps & opportunities */
+  --amber-600:    #d97706; /* trial badge, generation */
+  --amber-50:     #fffbeb;
+  --amber-200:    #fde68a;
+
+  --positive:     #16a34a; /* active / completed / positive delta */
+  --positive-50:  #f0fdf4;
+  --positive-200: #bbf7d0;
+  --positive-700: #166534;
+
+  --alert:        #dc2626; /* failures only */
+  --alert-50:     #fef2f2;
+  --alert-200:    #fecaca;
+  --alert-700:    #991b1b;
+
+  --info-50:      #eff6ff;
+  --info-200:     #bfdbfe;
+  --info-700:     #1e40af;
+
+  /* ---------- TYPE ---------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---------- RADII ---------- */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;   /* default card radius */
+  --r-xl: 18px;
+  --r-2xl: 22px;
+  --r-pill: 999px;
+
+  /* ---------- SHADOWS (soft, restrained — premium not decorative) ---------- */
+  --shadow-xs: 0 1px 2px rgba(16,24,40,.04);
+  --shadow-sm: 0 1px 3px rgba(16,24,40,.06);
+  --shadow-md: 0 6px 18px rgba(16,24,40,.10);
+  --shadow-lg: 0 18px 40px rgba(15,34,58,.16);
+  --shadow-focus: 0 0 0 3px rgba(2,132,199,.25);
+
+  /* ---------- SPACING (4px base) ---------- */
+  --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+  --sp-5: 20px;  --sp-6: 24px;  --sp-8: 32px;  --sp-10: 40px;
+  --sp-12: 48px; --sp-16: 64px; --sp-20: 80px;
+}
+
+/* ============================================================
+   BASE TYPE SCALE  (semantic vars)
+   App/data UI scale — tuned for density + readability.
+   ============================================================ */
+:root {
+  --display:  800 40px/1.1 var(--font-sans);   /* landing hero */
+  --h1:       800 30px/1.15 var(--font-sans);  /* page title */
+  --h2:       700 24px/1.2 var(--font-sans);   /* section */
+  --h3:       700 19px/1.3 var(--font-sans);   /* card / subsection */
+  --h4-label: 600 12px/1.4 var(--font-sans);   /* uppercase eyebrow/label */
+  --body:     400 15px/1.6 var(--font-sans);   /* default body */
+  --body-lg:  400 17px/1.6 var(--font-sans);   /* lede */
+  --small:    400 13px/1.5 var(--font-sans);   /* captions, helper */
+  --mono:     500 13px/1.5 var(--font-mono);   /* metrics, URLs, code */
+}
+
+/* Helper classes (optional convenience) */
+.ds-display { font: var(--display); letter-spacing: -.02em; color: var(--ink); }
+.ds-h1 { font: var(--h1); letter-spacing: -.02em; color: var(--ink); }
+.ds-h2 { font: var(--h2); letter-spacing: -.01em; color: var(--ink); }
+.ds-h3 { font: var(--h3); color: var(--ink); }
+.ds-eyebrow { font: var(--h4-label); text-transform: uppercase; letter-spacing: .06em; color: var(--fg2); }
+.ds-body { font: var(--body); color: var(--fg1); }
+.ds-small { font: var(--small); color: var(--fg3); }
+.ds-mono { font: var(--mono); color: var(--slate-700); }

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "project": {
+    "initializedAt": "2026-06-02T20:27:04.978Z",
+    "merchantDisplayName": null,
+    "merchantId": "acct_1TWAFnCHQLJhk243",
+    "projectId": "project_61UnMrIGtmw9JdydF16UfYD9L88SodevaVV1kMRoeV4i",
+    "projectName": "Competitor Research Agent"
+  },
+  "providers": {
+    "agentmail": {
+      "accountRequestId": "facctrq_61UnMy0FfXxiXzTsM16UfYD9L88SodevaVV1kMRoeEYS",
+      "configuration": {},
+      "linkedAt": "2026-06-02T20:34:01.789Z",
+      "providerId": "prvdr_61UWNSVKoGlVDwbHX5IUK",
+      "providerName": "AgentMail",
+      "redirectUrl": null,
+      "requestedAt": "2026-06-02T20:34:01.788Z",
+      "status": "complete"
+    }
+  },
+  "resources": {
+    "agentmail-api": {
+      "configuration": {},
+      "createdAt": "2026-06-02T20:34:41.037Z",
+      "lastRevealedAt": "2026-06-02T20:34:42.447Z",
+      "lastStatus": "complete",
+      "name": "agentmail-api",
+      "providerId": "prvdr_61UWNSVKoGlVDwbHX5IUK",
+      "providerName": "AgentMail",
+      "resourceId": "fres_61UnMyaAAZhn8CCKl16UfYD9L88SodevaVV1kMRoePyS",
+      "serviceId": "api"
+    },
+    "agentmail-plan": {
+      "configuration": {},
+      "createdAt": "2026-06-02T20:34:09.025Z",
+      "lastRevealedAt": "2026-06-02T20:34:10.343Z",
+      "lastStatus": "complete",
+      "name": "agentmail-plan",
+      "providerId": "prvdr_61UWNSVKoGlVDwbHX5IUK",
+      "providerName": "AgentMail",
+      "resourceId": "fres_61UnMy3CrvTYlwzHX16UfYD9L88SodevaVV1kMRoeDHk",
+      "serviceId": "free"
+    }
+  }
+}

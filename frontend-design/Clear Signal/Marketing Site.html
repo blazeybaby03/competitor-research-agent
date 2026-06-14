@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CompeteIQ — Marketing Site</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#0f172a;}
+button{font-family:'Inter',sans-serif;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useRef } = React;
+
+/* ── tokens ── */
+const T = {
+  navy:'#0f223a', brand:'#0284c7', brand700:'#0369a1', brand800:'#075985',
+  sky50:'#f0f9ff', sky100:'#e0f2fe', sky200:'#bae6fd', sky400:'#38bdf8',
+  amber:'#f59e0b', amber50:'#fffbeb', amber200:'#fde68a', amber600:'#d97706',
+  fg1:'#0f172a', fg2:'#475569', fg3:'#5b6472', fg4:'#94a3b8',
+  bg:'#f7f8fa', surface:'#fff', line:'#e4e8ee', lineSoft:'#eef2f7',
+  positive:'#16a34a',
+};
+
+/* ── icons (lucide-style inline SVG, no emoji) ── */
+const BuildingIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M3 9h18"/>
+    <path d="M15 9v4"/><path d="M15 17v1"/>
+  </svg>
+);
+const LinkIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+  </svg>
+);
+const FileTextIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+    <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+  </svg>
+);
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const CopyIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+);
+
+/* ── wordmark ── */
+const Wordmark = ({ light }) => (
+  <svg width="148" height="28" viewBox="0 0 180 36" fill="none">
+    <g transform="translate(2 2)">
+      <circle cx="16" cy="16" r="15" stroke={light ? '#fff' : T.navy} strokeWidth="2"/>
+      <circle cx="16" cy="16" r="9" stroke={light ? 'rgba(255,255,255,.35)' : '#cbd5e1'} strokeWidth="1.5"/>
+      <circle cx="16" cy="16" r="2.5" fill={light ? T.sky400 : T.brand}/>
+      <path d="M16 16 L29 9" stroke={light ? T.sky400 : T.brand} strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="24.5" cy="11.5" r="2.2" fill={T.amber}/>
+    </g>
+    <text x="42" y="25" fontFamily="Inter,sans-serif" fontSize="21" fontWeight="800" letterSpacing="-0.02em">
+      <tspan fill={light ? '#fff' : T.fg1}>Compete</tspan>
+      <tspan fill={light ? T.sky400 : T.brand}>IQ</tspan>
+    </text>
+  </svg>
+);
+
+/* ── source chip ── */
+const Chip = ({ label, pages }) => (
+  <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:12, fontWeight:500, color:'#334155', background:T.surface, border:`1px solid ${T.line}`, borderRadius:999, padding:'4px 10px 4px 8px' }}>
+    <span style={{ width:14, height:14, borderRadius:3, background:T.sky100, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:T.brand }}>{label[0].toUpperCase()}</span>
+    {label}<span style={{ color:T.fg4 }}>· {pages}</span>
+  </span>
+);
+
+/* ── nav ── */
+const NavBar = ({ onNav }) => (
+  <nav style={{ background:T.surface, borderBottom:`1px solid ${T.line}`, position:'sticky', top:0, zIndex:50 }}>
+    <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 24px', height:60, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <button onClick={() => onNav('home')} style={{ background:'none', border:'none', cursor:'pointer', padding:0, display:'flex' }}><Wordmark /></button>
+      <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+        <button onClick={() => onNav('report')}  style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:500, color:T.fg2, padding:'6px 12px', borderRadius:8 }}>Sample report</button>
+        <button onClick={() => onNav('pricing')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:500, color:T.fg2, padding:'6px 12px', borderRadius:8 }}>Pricing</button>
+        <a href="App.html" style={{ background:'none', textDecoration:'none', fontSize:14, fontWeight:500, color:T.fg2, padding:'6px 12px', borderRadius:8 }}>Log in</a>
+        <a href="App.html" style={{ background:T.brand, color:'#fff', textDecoration:'none', borderRadius:8, padding:'8px 16px', fontSize:14, fontWeight:600 }}>Start free</a>
+      </div>
+    </div>
+  </nav>
+);
+
+/* ── report preview card ── */
+const ReportPreviewCard = () => (
+  <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:16, boxShadow:'0 12px 36px rgba(15,34,58,.13)', overflow:'hidden', maxWidth:780, margin:'48px auto 0', textAlign:'left' }}>
+    <div style={{ background:T.navy, color:'#fff', padding:'18px 24px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div>
+        <div style={{ fontSize:11, fontWeight:700, letterSpacing:'.07em', textTransform:'uppercase', color:'#7dd3fc', marginBottom:4 }}>EXECUTIVE SUMMARY</div>
+        <div style={{ fontSize:16, fontWeight:700 }}>Acme Coffee Roasters — Competitive Briefing</div>
+      </div>
+      <div style={{ display:'flex', gap:8 }}>
+        <span style={{ background:'rgba(255,255,255,.12)', color:'#e2e8f0', fontSize:12, fontWeight:600, padding:'5px 10px', borderRadius:999 }}>5 competitors</span>
+        <span style={{ background:'rgba(34,197,94,.18)', color:'#86efac', fontSize:12, fontWeight:600, padding:'5px 10px', borderRadius:999 }}>Completed</span>
+      </div>
+    </div>
+    <div style={{ padding:'20px 24px', borderBottom:`1px solid ${T.line}` }}>
+      <p style={{ fontSize:14, lineHeight:1.75, color:'#334155', margin:0 }}>
+        Your three direct competitors all lack a subscription-based loyalty program. Their pricing is 12–18% higher on single-bag orders, yet none promote this as a premium signal. There is a clear gap in the <strong>direct-to-consumer bundle market</strong> that you can capture with a well-timed launch.
+      </p>
+    </div>
+    <div style={{ padding:'18px 24px', borderBottom:`1px solid ${T.line}` }}>
+      <div style={{ fontSize:11, fontWeight:700, letterSpacing:'.06em', textTransform:'uppercase', color:T.fg2, marginBottom:12 }}>MARKET GAPS IDENTIFIED</div>
+      <div style={{ display:'flex', gap:12 }}>
+        {[
+          { n:1, title:'No loyalty subscription',  body:'0 of 5 competitors offer recurring bundles' },
+          { n:2, title:'Weak mobile UX',            body:'4 of 5 sites have no mobile-first checkout' },
+          { n:3, title:'No origin story content',  body:'High-ROI SEO opportunity, zero competitors rank' },
+        ].map(g => (
+          <div key={g.n} style={{ background:T.amber50, border:`1px solid ${T.amber200}`, borderRadius:10, padding:'14px 16px', flex:1 }}>
+            <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.amber600, marginBottom:4 }}>Gap {g.n}</div>
+            <div style={{ fontSize:13, fontWeight:600, color:T.fg1, marginBottom:4 }}>{g.title}</div>
+            <div style={{ fontSize:12, color:T.fg3, lineHeight:1.5 }}>{g.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <div style={{ padding:'14px 24px', display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+      <span style={{ fontSize:11, fontWeight:700, letterSpacing:'.05em', textTransform:'uppercase', color:T.fg4, marginRight:4 }}>SOURCES</span>
+      <Chip label="brewbar.io"    pages="6 pages" />
+      <Chip label="roastery.co"  pages="4 pages" />
+      <Chip label="beancraft.com" pages="5 pages" />
+      <Chip label="dailygrind.io" pages="3 pages" />
+    </div>
+  </div>
+);
+
+/* ── how it works — Clear Signal fix: no emoji, proper icons ── */
+const HOW_STEPS = [
+  { icon: <BuildingIcon />, title:'Enter your business',  body:'Describe what you sell and who you serve. Takes 60 seconds.' },
+  { icon: <LinkIcon />,     title:'Add competitor URLs',  body:'Paste up to five URLs. CompeteIQ scrapes and reads every page.' },
+  { icon: <FileTextIcon />, title:'Get your briefing',    body:'A cited, executive-ready report lands in under 60 seconds.' },
+];
+
+const HowItWorks = () => (
+  <div style={{ background:T.bg, borderTop:`1px solid ${T.line}`, borderBottom:`1px solid ${T.line}` }}>
+    <div style={{ maxWidth:1100, margin:'0 auto', padding:'72px 24px', textAlign:'center' }}>
+      <div style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:10 }}>How it works</div>
+      <h2 style={{ fontSize:34, fontWeight:800, letterSpacing:'-.02em', color:T.fg1, margin:'0 0 14px' }}>Three steps to your briefing</h2>
+      <p style={{ fontSize:17, color:T.fg3, lineHeight:1.6, margin:'0 0 48px', maxWidth:480, marginLeft:'auto', marginRight:'auto' }}>No manual research. No spreadsheets. One brief you can act on.</p>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24 }}>
+        {HOW_STEPS.map((s, i) => (
+          <div key={i} style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.06)', padding:'24px', textAlign:'left' }}>
+            <div style={{ width:44, height:44, borderRadius:12, background:T.navy, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:18 }}>
+              {s.icon}
+            </div>
+            <div style={{ fontSize:13, fontWeight:700, color:T.brand, marginBottom:6, letterSpacing:'.01em' }}>Step {i + 1}</div>
+            <div style={{ fontSize:16, fontWeight:700, color:T.fg1, marginBottom:8 }}>{s.title}</div>
+            <div style={{ fontSize:14, color:T.fg3, lineHeight:1.6 }}>{s.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+/* ── pricing teaser ── */
+const PricingTeaser = () => (
+  <div style={{ maxWidth:1100, margin:'0 auto', padding:'80px 24px', textAlign:'center' }}>
+    <div style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.brand, marginBottom:10 }}>Simple pricing</div>
+    <h2 style={{ fontSize:34, fontWeight:800, letterSpacing:'-.02em', color:T.fg1, margin:'0 0 14px' }}>One plan. Unlimited intelligence.</h2>
+    <p style={{ fontSize:17, color:T.fg3, lineHeight:1.6, margin:'0 auto 40px', maxWidth:420 }}>Start with one free report — no credit card required.</p>
+    <div style={{ background:T.navy, color:'#e2e8f0', borderRadius:18, padding:'40px', maxWidth:480, margin:'0 auto', textAlign:'center', boxShadow:'0 18px 40px rgba(15,34,58,.18)' }}>
+      <div style={{ fontSize:12, fontWeight:700, letterSpacing:'.07em', textTransform:'uppercase', color:'#7dd3fc', marginBottom:18 }}>PRO PLAN</div>
+      <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', gap:6, marginBottom:6 }}>
+        <span style={{ fontSize:52, fontWeight:800, color:'#fff', letterSpacing:'-.03em', lineHeight:1 }}>$79</span>
+        <span style={{ color:'rgba(255,255,255,.5)', fontSize:16, marginBottom:8 }}>/mo</span>
+      </div>
+      <p style={{ color:'rgba(255,255,255,.55)', fontSize:13, margin:'0 0 28px' }}>Unlimited reports · up to 5 competitors · cancel anytime</p>
+      <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:28, textAlign:'left' }}>
+        {['Unlimited competitive briefings','Up to 5 competitor URLs per report','Executive summary + market gap matrix','Source citations on every finding','Secure billing via Stripe'].map(f => (
+          <div key={f} style={{ display:'flex', alignItems:'center', gap:10, fontSize:14, color:'rgba(255,255,255,.85)' }}>
+            <CheckIcon />{f}
+          </div>
+        ))}
+      </div>
+      <a href="App.html" style={{ display:'block', width:'100%', background:T.brand, color:'#fff', textDecoration:'none', borderRadius:10, padding:'14px', fontSize:15, fontWeight:700, textAlign:'center', boxSizing:'border-box' }}>Start with a free report</a>
+      <p style={{ color:'rgba(255,255,255,.35)', fontSize:12, marginTop:12 }}>No credit card required for your first report.</p>
+    </div>
+  </div>
+);
+
+/* ── landing page ── */
+const LandingPage = ({ onNav }) => (
+  <div>
+    <NavBar onNav={onNav} />
+    {/* Hero */}
+    <div style={{ background:'linear-gradient(140deg, #0b2a3f 0%, #0f223a 55%, #0a3352 100%)', padding:'80px 24px 100px', textAlign:'center' }}>
+      <div style={{ maxWidth:760, margin:'0 auto' }}>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.1)', color:'#7dd3fc', fontSize:12, fontWeight:700, padding:'5px 13px', borderRadius:999, letterSpacing:'.06em', marginBottom:28, textTransform:'uppercase' }}>
+          <span style={{ width:7, height:7, borderRadius:'50%', background:T.amber, display:'inline-block', flexShrink:0 }}></span>
+          AI-powered competitor intelligence
+        </div>
+        <h1 style={{ color:'#fff', fontSize:52, fontWeight:800, lineHeight:1.08, letterSpacing:'-.025em', margin:'0 0 18px' }}>Your competitive briefing<br/>in 60 seconds</h1>
+        <p style={{ color:'rgba(255,255,255,.8)', fontSize:19, lineHeight:1.6, margin:'0 0 40px' }}>Concise, cited, and built for business decisions.<br/>Enter a URL, get an executive-grade market report.</p>
+        <div style={{ display:'flex', gap:12, justifyContent:'center', flexWrap:'wrap' }}>
+          <a href="App.html" style={{ display:'inline-flex', alignItems:'center', gap:8, background:T.brand, color:'#fff', fontWeight:700, fontSize:15, padding:'14px 26px', borderRadius:10, textDecoration:'none', boxShadow:'0 4px 14px rgba(2,132,199,.35)' }}>Generate your first report free</a>
+          <button onClick={() => onNav('report')} style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(255,255,255,.1)', color:'#fff', fontWeight:600, fontSize:15, padding:'14px 26px', borderRadius:10, border:'1px solid rgba(255,255,255,.2)', cursor:'pointer' }}>View sample report →</button>
+        </div>
+        {/* Trust strip */}
+        <div style={{ display:'flex', gap:24, justifyContent:'center', marginTop:36, flexWrap:'wrap' }}>
+          {['No credit card','Secure Stripe billing','Under 60 seconds','5 competitors per report'].map(t => (
+            <span key={t} style={{ display:'flex', alignItems:'center', gap:7, color:'rgba(255,255,255,.65)', fontSize:13, fontWeight:500 }}>
+              <span style={{ width:6, height:6, borderRadius:'50%', background:'#22c55e', flexShrink:0, display:'inline-block' }}></span>{t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Report preview */}
+    <div style={{ background:T.bg, padding:'72px 24px', textAlign:'center', borderBottom:`1px solid ${T.line}` }}>
+      <div style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.brand, marginBottom:10 }}>What you get</div>
+      <h2 style={{ fontSize:34, fontWeight:800, letterSpacing:'-.02em', color:T.fg1, margin:'0 0 14px' }}>A real competitive briefing, not AI filler</h2>
+      <p style={{ fontSize:16, color:T.fg3, margin:'0 auto', maxWidth:520, lineHeight:1.6 }}>Every finding is cited. Every gap is sourced. You know exactly where the intelligence came from.</p>
+      <ReportPreviewCard />
+    </div>
+
+    <HowItWorks />
+    <PricingTeaser />
+
+    <footer style={{ background:'#0f172a', color:'rgba(255,255,255,.5)', padding:'40px 24px', textAlign:'center', fontSize:13 }}>
+      <Wordmark light />
+      <p style={{ margin:'14px 0 6px' }}>CompeteIQ · Competitor intelligence for fast-moving businesses.</p>
+      <p style={{ margin:0 }}>
+        {['Pricing','Privacy','Contact'].map(l => (
+          <button key={l} onClick={l === 'Pricing' ? () => onNav('pricing') : undefined} style={{ background:'none', border:'none', color:'rgba(255,255,255,.45)', cursor:'pointer', fontSize:13, padding:'0 10px' }}>{l}</button>
+        ))}
+      </p>
+    </footer>
+  </div>
+);
+
+/* ── pricing page ── */
+const PricingPage = ({ onNav }) => {
+  const features = [
+    'Unlimited competitive briefings','Up to 5 competitor URLs per report',
+    'Executive summary + market gap matrix','Recommended action cards',
+    'Source citations on every finding','Pages scanned count per source',
+    'Copy & share report output','Secure billing via Stripe','Cancel anytime, no lock-in',
+  ];
+  const faqs = [
+    { q:'Do I need a credit card to start?', a:'No. Your first report is completely free. We only ask for payment details when you upgrade to Pro.' },
+    { q:'How does billing work?', a:'Pro is $79/month, billed monthly via Stripe. Cancel at any time from your account page — no questions asked.' },
+    { q:'How many competitors can I analyze?', a:'Up to five competitor URLs per report. Run as many reports as you need on the Pro plan.' },
+    { q:'How accurate are the reports?', a:'CompeteIQ scrapes and reads the live pages you provide, so every finding is sourced. The executive summary is generated by Claude and includes citation chips linking to specific pages.' },
+    { q:'Can I share reports with my team?', a:'Yes. Every report has a copy-report button that exports the full text, and a share link for teammates.' },
+  ];
+  return (
+    <div style={{ fontFamily:'Inter,sans-serif', background:T.bg, minHeight:'100vh' }}>
+      <NavBar onNav={onNav} />
+      <div style={{ background:T.surface, borderBottom:`1px solid ${T.line}`, padding:'56px 24px 64px', textAlign:'center' }}>
+        <div style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.brand, marginBottom:10 }}>Pricing</div>
+        <h1 style={{ fontSize:40, fontWeight:800, letterSpacing:'-.02em', color:T.fg1, margin:'0 0 14px' }}>Simple, transparent pricing</h1>
+        <p style={{ fontSize:18, color:T.fg3, margin:'0 auto', maxWidth:500, lineHeight:1.6 }}>Start with one free report. Upgrade when the intelligence pays for itself.</p>
+      </div>
+      <div style={{ maxWidth:900, margin:'0 auto', padding:'56px 24px 80px' }}>
+        {/* DIY vs CompeteIQ */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, marginBottom:40 }}>
+          <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:'#dc2626', textTransform:'uppercase', letterSpacing:'.05em', marginBottom:14 }}>DIY competitive research</div>
+            {[['Hours spent on manual search','4–8 hrs'],['Competitor sites reviewed','2–3'],['Insights organized','Raw notes'],['Time to first decision','Days'],['Cost (your hourly rate)','$200–400']].map(([l,v]) => (
+              <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:`1px solid ${T.lineSoft}`, fontSize:13 }}>
+                <span style={{ color:T.fg3 }}>{l}</span><span style={{ fontWeight:600, color:T.fg1 }}>{v}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ background:T.sky50, border:`1px solid ${T.sky200}`, borderRadius:14, padding:24 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:T.brand, textTransform:'uppercase', letterSpacing:'.05em', marginBottom:14 }}>CompeteIQ Pro</div>
+            {[['Reports generated','Unlimited'],['Competitor sites reviewed','Up to 5 per report'],['Insights organized','Executive briefing'],['Time to first decision','60 seconds'],['Monthly cost','$79/mo']].map(([l,v]) => (
+              <div key={l} style={{ display:'flex', justifyContent:'space-between', padding:'8px 0', borderBottom:`1px solid ${T.sky200}`, fontSize:13 }}>
+                <span style={{ color:T.brand700 }}>{l}</span><span style={{ fontWeight:700, color:T.navy }}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Plan card */}
+        <div style={{ background:T.navy, color:'#e2e8f0', borderRadius:18, padding:'40px', textAlign:'center', boxShadow:'0 18px 40px rgba(15,34,58,.18)' }}>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:'.08em', textTransform:'uppercase', color:'#7dd3fc', marginBottom:20 }}>PRO PLAN</div>
+          <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'center', gap:6, marginBottom:6 }}>
+            <span style={{ fontSize:56, fontWeight:800, color:'#fff', letterSpacing:'-.03em', lineHeight:1 }}>$79</span>
+            <span style={{ color:'rgba(255,255,255,.5)', fontSize:16, marginBottom:8 }}>/ month</span>
+          </div>
+          <p style={{ color:'rgba(255,255,255,.5)', fontSize:13, margin:'0 0 32px' }}>Billed monthly. Cancel anytime.</p>
+          <div style={{ textAlign:'left', marginBottom:32 }}>
+            {features.map(f => (
+              <div key={f} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:'1px solid rgba(255,255,255,.08)', fontSize:14, color:'rgba(255,255,255,.85)' }}>
+                <CheckIcon />{f}
+              </div>
+            ))}
+          </div>
+          <a href="App.html" style={{ display:'block', width:'100%', background:T.brand, color:'#fff', textDecoration:'none', borderRadius:10, padding:15, fontSize:15, fontWeight:700, textAlign:'center', boxSizing:'border-box', marginBottom:10 }}>Start with a free report</a>
+          <p style={{ color:'rgba(255,255,255,.35)', fontSize:12, margin:0 }}>No credit card required for your first report.</p>
+        </div>
+        {/* FAQ */}
+        <div style={{ marginTop:64 }}>
+          <h2 style={{ fontSize:26, fontWeight:800, color:T.fg1, margin:'0 0 4px', textAlign:'center' }}>Questions</h2>
+          <p style={{ textAlign:'center', color:T.fg3, marginBottom:36, fontSize:14 }}>Anything else? Email us at <span style={{ color:T.brand }}>hello@competeiq.com</span></p>
+          {faqs.map(({ q, a }) => (
+            <div key={q} style={{ borderBottom:`1px solid ${T.line}`, padding:'18px 0' }}>
+              <div style={{ fontSize:15, fontWeight:600, color:T.fg1, marginBottom:7 }}>{q}</div>
+              <div style={{ fontSize:14, color:T.fg3, lineHeight:1.65 }}>{a}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <footer style={{ background:'#0f172a', color:'rgba(255,255,255,.5)', padding:'32px 24px', textAlign:'center', fontSize:13 }}>
+        <Wordmark light />
+        <p style={{ margin:'14px 0 0' }}>CompeteIQ · Competitor intelligence for fast-moving businesses.</p>
+      </footer>
+    </div>
+  );
+};
+
+/* ── sample report page ── */
+const SRCheck = ({ ok }) => ok
+  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+
+const SampleReportPage = ({ onNav }) => (
+  <div style={{ fontFamily:'Inter,sans-serif', background:T.bg, minHeight:'100vh' }}>
+    <NavBar onNav={onNav} />
+    {/* Masthead */}
+    <div style={{ background:T.navy, color:'#fff', padding:'28px 32px' }}>
+      <div style={{ maxWidth:900, margin:'0 auto', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16 }}>
+        <div>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:'.07em', textTransform:'uppercase', color:'#7dd3fc', marginBottom:8 }}>SAMPLE COMPETITIVE BRIEFING</div>
+          <h1 style={{ fontSize:24, fontWeight:800, color:'#fff', margin:'0 0 6px', letterSpacing:'-.01em' }}>Acme Coffee Roasters</h1>
+          <p style={{ color:'rgba(255,255,255,.6)', fontSize:14, margin:0 }}>Generated Jun 3, 2026 · 5 competitors · 25 pages scanned · 61 seconds</p>
+        </div>
+        <div style={{ display:'flex', gap:8, flexShrink:0 }}>
+          <button style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.12)', color:'#fff', border:'1px solid rgba(255,255,255,.2)', borderRadius:8, padding:'9px 14px', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+            <CopyIcon />Copy report
+          </button>
+          <a href="App.html" style={{ display:'inline-flex', alignItems:'center', gap:6, background:T.brand, color:'#fff', textDecoration:'none', borderRadius:8, padding:'9px 16px', fontSize:13, fontWeight:600 }}>Generate your own →</a>
+        </div>
+      </div>
+    </div>
+    <div style={{ maxWidth:900, margin:'0 auto', padding:'36px 24px 80px' }}>
+      {/* Executive summary */}
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.05)', padding:24, marginBottom:16 }}>
+        <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.brand, marginBottom:12 }}>EXECUTIVE SUMMARY</div>
+        <p style={{ fontSize:15, lineHeight:1.75, color:'#334155', margin:0 }}>
+          Acme Coffee Roasters operates in a market where all five direct competitors have significant gaps in <strong>subscription-model UX, mobile checkout, and origin-story content marketing.</strong> Their average price per single bag is 14% higher than Acme's, yet none promote this as a premium signal. The highest-ROI opportunity is a direct-to-consumer subscription bundle, which zero competitors currently offer. A secondary gap exists in mobile-first checkout flows.
+        </p>
+      </div>
+      {/* Market gaps */}
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+        <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.amber600, marginBottom:12 }}>3 MARKET GAPS IDENTIFIED</div>
+        <div style={{ display:'flex', gap:12 }}>
+          {[
+            { n:1, title:'No subscription offering', body:'Zero of 5 competitors offer a loyalty subscription or recurring bundle. High-LTV product gap.', src:'brewbar.io, roastery.co' },
+            { n:2, title:'Weak mobile checkout UX', body:'4 of 5 competitors have poor mobile CWV. A mobile-first storefront is a direct conversion advantage.', src:'beancraft.com, dailygrind.io' },
+            { n:3, title:'Thin origin content', body:'No competitor ranks for high-volume origin-story keywords. Clean SEO opportunity with zero competition.', src:'All 5 competitors' },
+          ].map(g => (
+            <div key={g.n} style={{ background:T.amber50, border:`1px solid ${T.amber200}`, borderRadius:10, padding:'14px 16px', flex:1, minWidth:0 }}>
+              <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.amber600, marginBottom:4 }}>Gap {g.n}</div>
+              <div style={{ fontSize:13, fontWeight:700, color:T.fg1, marginBottom:6 }}>{g.title}</div>
+              <div style={{ fontSize:12, color:T.fg3, lineHeight:1.6, marginBottom:8 }}>{g.body}</div>
+              <div style={{ fontSize:11, color:T.fg4 }}>Source: {g.src}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Recommended actions */}
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+        <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:12 }}>RECOMMENDED ACTIONS</div>
+        <div style={{ display:'flex', gap:12 }}>
+          {[
+            { n:'01', action:'Launch a monthly coffee subscription', why:'First mover advantage in a gap zero competitors occupy.' },
+            { n:'02', action:'Rebuild mobile checkout in 2 sprints', why:'Recoverable conversion rate vs all 4 weak competitors.' },
+            { n:'03', action:'Publish 8 origin-story blog posts', why:'High-volume keywords, zero competing content detected.' },
+          ].map(a => (
+            <div key={a.n} style={{ background:T.sky50, border:`1px solid ${T.sky200}`, borderRadius:10, padding:'14px 16px', flex:1, minWidth:0 }}>
+              <div style={{ fontSize:16, fontWeight:800, color:T.brand700, marginBottom:6 }}>{a.n}</div>
+              <div style={{ fontSize:13, fontWeight:700, color:T.fg1, marginBottom:4 }}>{a.action}</div>
+              <div style={{ fontSize:12, color:T.fg3 }}>{a.why}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Comparison table */}
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+        <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:12 }}>COMPETITOR COMPARISON</div>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+            <thead>
+              <tr style={{ background:T.navy }}>
+                {['Feature','brewbar.io','roastery.co','beancraft.com','dailygrind.io'].map(h => (
+                  <th key={h} style={{ color:'#fff', padding:'10px 12px', textAlign:'left', fontSize:11, fontWeight:700, letterSpacing:'.04em', textTransform:'uppercase' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['Subscription offer',   false,false,false,false],
+                ['Mobile-optimised',     true, false,false,false],
+                ['Origin story content', false,false,true, false],
+                ['Live chat support',    true, true, false,false],
+                ['Clear pricing page',   true, false,true, true],
+              ].map(([feat,...vals], i) => (
+                <tr key={feat} style={{ background: i%2===0 ? '#fff' : '#fafbfc', borderBottom:`1px solid ${T.lineSoft}` }}>
+                  <td style={{ padding:'9px 12px', fontWeight:500, color:'#334155' }}>{feat}</td>
+                  {vals.map((v,j) => <td key={j} style={{ padding:'9px 12px' }}><SRCheck ok={v}/></td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {/* Sources */}
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:24 }}>
+        <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:12 }}>SOURCES SCANNED</div>
+        <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+          {[['brewbar.io','6 pages'],['roastery.co','4 pages'],['beancraft.com','5 pages'],['dailygrind.io','3 pages'],['morebeans.com','7 pages']].map(([d,p]) => (
+            <Chip key={d} label={d} pages={p} />
+          ))}
+          <span style={{ fontSize:12, color:T.fg4, marginLeft:4 }}>25 pages total</span>
+        </div>
+      </div>
+      {/* CTA */}
+      <div style={{ textAlign:'center', padding:'40px', background:T.surface, borderRadius:14, border:`1px solid ${T.line}` }}>
+        <h2 style={{ fontSize:24, fontWeight:800, color:T.fg1, margin:'0 0 10px', letterSpacing:'-.01em' }}>Ready to brief your own market?</h2>
+        <p style={{ color:T.fg3, fontSize:15, margin:'0 0 24px' }}>Your first report is free. No credit card required.</p>
+        <a href="App.html" style={{ display:'inline-flex', alignItems:'center', background:T.brand, color:'#fff', textDecoration:'none', borderRadius:10, padding:'14px 28px', fontSize:15, fontWeight:700 }}>Generate your first report free</a>
+      </div>
+    </div>
+  </div>
+);
+
+/* ── router ── */
+const App = () => {
+  const [page, setPage] = useState('home');
+  const nav = (p) => { setPage(p); window.scrollTo({ top:0, behavior:'instant' }); };
+  if (page === 'pricing') return <PricingPage onNav={nav} />;
+  if (page === 'report')  return <SampleReportPage onNav={nav} />;
+  return <LandingPage onNav={nav} />;
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

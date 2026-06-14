@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CompeteIQ - 3 Frontend Design Drafts</title>
+<style>
+  :root{--bg:#f7f8fa;--ink:#0f172a;--muted:#5b6472;--line:#e4e8ee;--brand:#0284c7;--radius:14px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 22px 96px}
+  header.hero{background:linear-gradient(135deg,#0b3a5c,#0284c7 70%);color:#fff;border-radius:20px;padding:46px 40px;margin-bottom:30px}
+  header.hero .tag{display:inline-block;background:rgba(255,255,255,.16);padding:5px 13px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:16px}
+  header.hero h1{margin:0 0 10px;font-size:34px;font-weight:800;letter-spacing:-.02em}
+  header.hero p{margin:0;max-width:760px;font-size:17px;opacity:.92}
+  h2{font-size:26px;margin:10px 0 6px;letter-spacing:-.01em}
+  h3{font-size:18px;margin:22px 0 6px}
+  h4{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin:18px 0 6px}
+  a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+  p{margin:8px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+  .draft{border-radius:18px;padding:30px 30px 36px;margin:26px 0;border:1px solid var(--line);box-shadow:0 1px 3px rgba(16,24,40,.05)}
+  .d1{background:#ffffff}
+  .d2{background:#fbfcfe}
+  .d3{background:#fbfbfa}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;color:#fff;margin-bottom:10px}
+  .b1{background:#0284c7}.b2{background:#0f223a}.b3{background:#16161a}
+  .spec{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin:14px 0}
+  @media(max-width:760px){.spec{grid-template-columns:1fr}header.hero{padding:30px 22px}header.hero h1{font-size:28px}}
+  .spec .row{padding:7px 0;border-bottom:1px solid var(--line)}
+  .spec .row b{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin-bottom:1px}
+  .spec .row span{font-size:14.5px}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .sw{width:74px;text-align:center;font-size:10.5px;color:#64748b}
+  .sw i{display:block;height:42px;border-radius:8px;border:1px solid rgba(0,0,0,.08);margin-bottom:3px}
+  .wfgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:760px){.wfgrid{grid-template-columns:1fr}}
+  .wf{border:2px dashed #cbd5e1;border-radius:10px;padding:9px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.8px;color:#475569;background:#fff}
+  .wf .ti{font-weight:700;color:#0f172a;margin-bottom:6px;font-family:inherit}
+  .wf .bar{background:#0f223a;color:#fff;border-radius:6px;padding:5px 9px;display:flex;justify-content:space-between;margin-bottom:7px;font-weight:600}
+  .wf .row{display:flex;gap:6px;margin:5px 0}
+  .wf .box{background:#eef2f7;border:1px solid #d6deea;border-radius:5px;padding:9px 6px;text-align:center;flex:1}
+  .wf .box.tall{padding:22px 6px}
+  .wf .box.xtall{padding:34px 6px}
+  .wf .box.accent{background:#f0f9ff;border-color:#bae6fd;color:#0369a1}
+  .wf .box.dark{background:#0f223a;color:#fff;border-color:#0f223a}
+  .wf .box.lime{background:#1a1a1f;color:#c6f24e;border-color:#1a1a1f}
+  .wf .side{flex:0 0 70px}
+  .pros{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin:10px 0;font-size:14px}
+  .why{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin:10px 0;font-size:14px}
+  .warn{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;margin:10px 0;font-size:14px}
+  .toc{columns:2;font-size:14px}.toc a{display:block;padding:2px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#0f223a;color:#fff;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+  tr:last-child td{border-bottom:none}
+  .rec{background:#0f223a;color:#e2e8f0;border-radius:16px;padding:26px 30px;margin:26px 0}
+  .rec h2{color:#fff}.rec h4{color:#7dd3fc}.rec b{color:#fff}
+  .rec table{color:#0f172a}
+  .note{font-size:13px;color:var(--muted);font-style:italic}
+  footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">FRONTEND DESIGN STRATEGY - PART 2 OF 3</span>
+  <h1>Three Launch-Pragmatic Frontend Design Drafts</h1>
+  <p>Three meaningfully different directions for CompeteIQ, grounded in the Part 1 research report and the current Next.js 15 + Tailwind + lucide-react app. The drafts preserve launch-critical stability while showing how the product can mature after revenue starts.</p>
+</header>
+
+<div class="draft" style="background:#fff">
+  <h3 style="margin-top:0">How to read this</h3>
+  <p>The research report shows the same pattern across Crayon, Klue, Similarweb, Linear, and Perplexity: users trust real product output, clear citations, simple navigation, and answer-first reports. They reject noisy dashboards, tab sprawl, and enterprise friction. These drafts translate that into three product directions.</p>
+  <div class="toc">
+    <a href="#d1">Draft 1 - Clear Signal (fastest launch)</a>
+    <a href="#d2">Draft 2 - Briefing Room (highest value)</a>
+    <a href="#d3">Draft 3 - Radar (post-launch brand bet)</a>
+    <a href="#reco">Recommendation matrix</a>
+  </div>
+  <p class="note">All wireframes are low-fidelity HTML boxes. They describe structure, hierarchy, and page intent, not final production pixels.</p>
+</div>
+
+<!-- ===================== DRAFT 1 ===================== -->
+<div class="draft d1" id="d1">
+  <span class="badge b1">DRAFT 1 - FASTEST PUBLIC LAUNCH</span>
+  <h2>"Clear Signal"</h2>
+  <p class="note">A polish pass on what already exists. Light, trustworthy, direct, and shippable without changing the backend or adding a component system.</p>
+
+  <div class="swatches">
+    <div class="sw"><i style="background:#0284c7"></i>brand-600 #0284c7</div>
+    <div class="sw"><i style="background:#0369a1"></i>brand-700 #0369a1</div>
+    <div class="sw"><i style="background:#f0f9ff"></i>brand-50 #f0f9ff</div>
+    <div class="sw"><i style="background:#0f172a"></i>ink #0f172a</div>
+    <div class="sw"><i style="background:#f7f8fa;border-color:#d6deea"></i>bg #f7f8fa</div>
+    <div class="sw"><i style="background:#16a34a"></i>active</div>
+    <div class="sw"><i style="background:#d97706"></i>trial</div>
+  </div>
+
+  <div class="spec">
+    <div class="row"><b>1 - Design name</b><span>Clear Signal</span></div>
+    <div class="row"><b>2 - Positioning angle</b><span>Competitor intelligence without the enterprise mess. One clear report, one clear next move.</span></div>
+    <div class="row"><b>3 - Best-suited user</b><span>Solo founders, small business owners, consultants, and operators who need a useful answer today.</span></div>
+    <div class="row"><b>4 - Landing page</b><span>Top nav, direct hero, real report preview, trust strip, 3-step flow, four proof-led feature cards, single Pro card, FAQ, footer.</span></div>
+    <div class="row"><b>5 - Dashboard</b><span>Current dashboard pattern with stronger hierarchy: plan badge, free-report remaining state, business form, generate CTA, recent reports.</span></div>
+    <div class="row"><b>6 - Report page</b><span>Answer-first report: executive summary, top market gaps, recommended actions, competitor summaries, analysis sections, copy button.</span></div>
+    <div class="row"><b>7 - Navigation</b><span>Keep the current horizontal dashboard nav. Dashboard, Reports, plan badge, account, sign-out. No sidebar before launch.</span></div>
+    <div class="row"><b>8 - Colour scheme</b><span>Existing sky-blue brand on white and gray-50. Green for active, amber for trial/generation, red only for failures.</span></div>
+    <div class="row"><b>9 - Typography</b><span>Existing <code>next/font</code> Inter. Tighten hierarchy through size and weight, not new font dependencies.</span></div>
+    <div class="row"><b>10 - UI components</b><span>Reuse current <code>.card</code>, <code>.btn-primary</code>, <code>.btn-secondary</code>, <code>.input</code>, badges, and lucide-react icons.</span></div>
+    <div class="row"><b>11 - Button style</b><span>Solid brand primary, restrained secondary, icons only where they clarify action. One dominant CTA per screen.</span></div>
+    <div class="row"><b>12 - Card style</b><span>White cards, 1px border, soft shadow, rounded-xl, generous padding. No nested-card complexity.</span></div>
+    <div class="row"><b>13 - Form / input</b><span>Current single-column and two-column inputs; clearer helper text and inline error copy. Server URL validation remains authoritative.</span></div>
+    <div class="row"><b>14 - Table / report</b><span>Stacked report sections instead of dense tables. Lists and numbered actions make the output fast to scan.</span></div>
+    <div class="row"><b>15 - Pricing page</b><span>One Pro card: $79/mo, unlimited reports, up to 5 competitors, secure Stripe billing, one free report before paying.</span></div>
+    <div class="row"><b>16 - Mobile</b><span>Single-column stacks, current nav remains simple, report sections stay readable, CTAs are full width where useful.</span></div>
+    <div class="row"><b>17 - Trust elements</b><span>Real report preview, no credit card, secure billing via Stripe, one free report, source list where available.</span></div>
+    <div class="row"><b>18 - Supports conversion</b><span>Reduces friction. The user sees the report value before signup and has one obvious action: generate the free report.</span></div>
+    <div class="row"><b>19 - Supports efficiency</b><span>Direct setup, no new navigation model, no configuration burden, no dashboard firehose.</span></div>
+    <div class="row"><b>20 - Inspired by</b><span>Perplexity's low-friction first action, Similarweb's at-a-glance comparison, and the current app's launch constraints.</span></div>
+    <div class="row"><b>21 - Why it fits CompeteIQ</b><span>It protects the Friday-launch goal. It improves trust and conversion without creating a new QA surface.</span></div>
+  </div>
+
+  <h4>Wireframes - Draft 1</h4>
+  <div class="wfgrid">
+    <div class="wf"><div class="ti">Homepage</div>
+      <div class="bar"><span>CompeteIQ</span><span>Login - Get started</span></div>
+      <div class="row"><div class="box accent xtall">H1: Know what your competitors are doing<br>[Generate your first report free]</div></div>
+      <div class="row"><div class="box tall">real report preview: gaps, actions, sources</div></div>
+      <div class="row"><div class="box">No card</div><div class="box">Stripe billing</div><div class="box">60 sec report</div></div>
+      <div class="row"><div class="box">3-step setup</div></div>
+      <div class="row"><div class="box accent">Pro $79/mo - unlimited reports</div></div>
+    </div>
+    <div class="wf"><div class="ti">Pricing</div>
+      <div class="bar"><span>CompeteIQ</span><span>Login</span></div>
+      <div class="row"><div class="box">H2: Simple, transparent pricing</div></div>
+      <div class="row"><div class="box accent xtall">PRO - $79/mo<br>unlimited reports - 5 competitors - share reports<br>[Start free]</div></div>
+      <div class="row"><div class="box">FAQ: free report, billing, cancellation</div></div>
+    </div>
+    <div class="wf"><div class="ti">Dashboard</div>
+      <div class="bar"><span>CompeteIQ - Dashboard - Reports</span><span>Trial - email</span></div>
+      <div class="row"><div class="box accent">1 free report remaining - [Generate when ready]</div></div>
+      <div class="row"><div class="box tall">Your business form</div><div class="box tall">Recent reports</div></div>
+    </div>
+    <div class="wf"><div class="ti">Report detail</div>
+      <div class="bar"><span>Acme competitive report</span><span>Copy report</span></div>
+      <div class="row"><div class="box accent tall">Executive summary + top 3 gaps</div></div>
+      <div class="row"><div class="box">Recommended actions</div><div class="box">Competitor summaries</div></div>
+      <div class="row"><div class="box">Positioning</div><div class="box">Pricing</div></div>
+      <div class="row"><div class="box">Sources / scraped pages</div></div>
+    </div>
+    <div class="wf"><div class="ti">Billing / account</div>
+      <div class="bar"><span>Billing</span><span>Plan badge</span></div>
+      <div class="row"><div class="box">Trial or Pro status</div></div>
+      <div class="row"><div class="box accent">[Upgrade to Pro] or [Manage billing]</div></div>
+      <div class="row"><div class="box">Support email - account email - sign out</div></div>
+    </div>
+    <div class="wf"><div class="ti">Empty + loading states</div>
+      <div class="row"><div class="box tall">EMPTY: No reports yet<br>[Generate your first report]</div></div>
+      <div class="row"><div class="box dark tall">LOADING: scraping - reading - analysing - writing<br>~60 seconds</div></div>
+    </div>
+  </div>
+
+  <div class="pros"><b>Strengths:</b> fastest to ship, lowest dependency risk, closest to the current app, easiest to QA, strongest fit for the current launch window.</div>
+  <div class="warn"><b>Trade-off:</b> It will feel competent and trustworthy, but not as premium or ownable as Draft 2 or Draft 3.</div>
+  <div class="why"><b>Implementation stance:</b> Use existing Tailwind classes, current components, lucide icons, and <code>npm run verify</code>. Do not install shadcn/ui before public launch.</div>
+</div>
+
+<!-- ===================== DRAFT 2 ===================== -->
+<div class="draft d2" id="d2">
+  <span class="badge b2">DRAFT 2 - HIGHEST PERCEIVED VALUE</span>
+  <h2>"Briefing Room"</h2>
+  <p class="note">A premium but restrained SaaS direction. It makes the report feel like a decision-grade briefing instead of a generic AI document.</p>
+
+  <div class="swatches">
+    <div class="sw"><i style="background:#0f223a"></i>navy #0f223a</div>
+    <div class="sw"><i style="background:#0ea5e9"></i>sky #0ea5e9</div>
+    <div class="sw"><i style="background:#f59e0b"></i>signal amber</div>
+    <div class="sw"><i style="background:#f8fafc;border-color:#d6deea"></i>canvas</div>
+    <div class="sw"><i style="background:#1e293b"></i>slate-800</div>
+    <div class="sw"><i style="background:#475569"></i>muted</div>
+    <div class="sw"><i style="background:#16a34a"></i>positive</div>
+  </div>
+
+  <div class="spec">
+    <div class="row"><b>1 - Design name</b><span>Briefing Room</span></div>
+    <div class="row"><b>2 - Positioning angle</b><span>Your AI competitive briefing: concise, cited, and built for business decisions.</span></div>
+    <div class="row"><b>3 - Best-suited user</b><span>Consultants, agencies, growth leads, and founders who need the product to feel worth $79/mo.</span></div>
+    <div class="row"><b>4 - Landing page</b><span>Hero with report preview, "anatomy of a report" showcase, use-case sections, trust strip, pricing, FAQ, and a sample-report CTA.</span></div>
+    <div class="row"><b>5 - Dashboard</b><span>Still simple, but more polished: KPI row, business card, recent report cards, plan status, and clearer report generation panel.</span></div>
+    <div class="row"><b>6 - Report page</b><span>Report is the product showpiece: executive summary first, opportunity cards, competitor comparison, section jump links, source/citation chips.</span></div>
+    <div class="row"><b>7 - Navigation</b><span>Keep top nav at first. Sidebar can wait until the dashboard has enough density to justify it.</span></div>
+    <div class="row"><b>8 - Colour scheme</b><span>Navy and sky become the premium brand base; amber is reserved for market gaps and opportunities.</span></div>
+    <div class="row"><b>9 - Typography</b><span>Use current Inter immediately. Post-launch, tune font variables or add a display weight only if it does not create layout churn.</span></div>
+    <div class="row"><b>10 - UI components</b><span>Pre-launch: existing components. Post-launch: selectively introduce shadcn/Radix for tabs, tooltips, dialogs, and table primitives.</span></div>
+    <div class="row"><b>11 - Button style</b><span>Solid sky primary, restrained navy outline secondary, small ghost text links for lower-priority actions.</span></div>
+    <div class="row"><b>12 - Card style</b><span>More structured cards with header rows, section labels, and tighter spacing. Premium, not decorative.</span></div>
+    <div class="row"><b>13 - Form / input</b><span>Business and competitor form becomes more guided: examples, URL count, validation copy, and save/generate continuity.</span></div>
+    <div class="row"><b>14 - Table / report</b><span>Comparison matrix only where it improves scan speed. Keep the primary report narrative readable.</span></div>
+    <div class="row"><b>15 - Pricing page</b><span>$79/mo framed against DIY research time. Include "one free report", "secure billing", and "cancel anytime" copy.</span></div>
+    <div class="row"><b>16 - Mobile</b><span>Report jump links collapse into a compact section nav. Comparison areas become stacked cards.</span></div>
+    <div class="row"><b>17 - Trust elements</b><span>Sample report, source chips, "pages scanned" count, Stripe billing, no card for first report, clear failure states.</span></div>
+    <div class="row"><b>18 - Supports conversion</b><span>Shows the value of the report before asking for money; makes the upgrade feel like buying recurring intelligence.</span></div>
+    <div class="row"><b>19 - Supports efficiency</b><span>The report opens with what matters now, then lets users drill into evidence only when needed.</span></div>
+    <div class="row"><b>20 - Inspired by</b><span>Klue's consumption surface, Similarweb's comparison clarity, Linear's restraint, Perplexity's trust through sources.</span></div>
+    <div class="row"><b>21 - Why it fits CompeteIQ</b><span>It is the best long-term SaaS brand path because it feels serious without becoming enterprise-heavy.</span></div>
+  </div>
+
+  <h4>Wireframes - Draft 2</h4>
+  <div class="wfgrid">
+    <div class="wf"><div class="ti">Homepage</div>
+      <div class="bar"><span>CompeteIQ</span><span>Sample report - Login - Start free</span></div>
+      <div class="row"><div class="box accent xtall">H1: Your competitive briefing in 60 seconds<br>[Start free] [View sample]</div></div>
+      <div class="row"><div class="box tall">layered report preview with summary, gaps, citations</div></div>
+      <div class="row"><div class="box">Anatomy of a report</div></div>
+      <div class="row"><div class="box">Founder use case</div><div class="box">Consultant use case</div></div>
+      <div class="row"><div class="box accent">Pro $79/mo - recurring competitive briefings</div></div>
+    </div>
+    <div class="wf"><div class="ti">Pricing</div>
+      <div class="bar"><span>Simple pricing</span><span>Start free</span></div>
+      <div class="row"><div class="box">DIY research cost vs CompeteIQ</div></div>
+      <div class="row"><div class="box accent xtall">PRO $79/mo<br>Unlimited reports - 5 competitors - share output<br>[Upgrade after free report]</div></div>
+      <div class="row"><div class="box">Stripe - cancel anytime - FAQ</div></div>
+    </div>
+    <div class="wf"><div class="ti">Dashboard</div>
+      <div class="bar"><span>Dashboard</span><span>Trial / Pro</span></div>
+      <div class="row"><div class="box accent">Reports run</div><div class="box accent">Competitors saved</div><div class="box accent">Plan state</div></div>
+      <div class="row"><div class="box tall">Business setup</div><div class="box tall">Generate briefing panel</div></div>
+      <div class="row"><div class="box">Recent report cards with status and summary</div></div>
+    </div>
+    <div class="wf"><div class="ti">Report detail</div>
+      <div class="row"><div class="box side xtall">Jump<br>Summary<br>Gaps<br>Competitors<br>Sources</div>
+        <div style="flex:1">
+          <div class="bar"><span>Briefing report</span><span>Copy - Share</span></div>
+          <div class="row"><div class="box accent">Executive summary</div></div>
+          <div class="row"><div class="box">Gap 1</div><div class="box">Gap 2</div><div class="box">Gap 3</div></div>
+          <div class="row"><div class="box tall">competitor comparison + citation chips</div></div>
+        </div></div>
+    </div>
+    <div class="wf"><div class="ti">Billing / account</div>
+      <div class="bar"><span>Billing</span><span>Account</span></div>
+      <div class="row"><div class="box accent">Current plan: Trial or Pro</div></div>
+      <div class="row"><div class="box">What Pro unlocks</div><div class="box">Manage billing via Stripe</div></div>
+      <div class="row"><div class="box">Support email and account details</div></div>
+    </div>
+    <div class="wf"><div class="ti">Empty + loading states</div>
+      <div class="row"><div class="box tall">EMPTY: Run your first competitive briefing<br>[Add competitors]</div></div>
+      <div class="row"><div class="box dark tall">LOADING: stepper + skeleton report preview<br>fetch - scrape - analyse - write</div></div>
+    </div>
+  </div>
+
+  <div class="pros"><b>Strengths:</b> highest perceived value, best long-term SaaS credibility, strong report trust, clean upgrade path after launch.</div>
+  <div class="warn"><b>Trade-off:</b> More design and QA work than Draft 1. Best treated as the post-launch polish pass unless the launch date moves.</div>
+  <div class="why"><b>Implementation stance:</b> Build Draft 1 first, but use Draft 2's language and hierarchy where it can be added without new dependencies.</div>
+</div>
+
+<!-- ===================== DRAFT 3 ===================== -->
+<div class="draft d3" id="d3">
+  <span class="badge b3">DRAFT 3 - POST-LAUNCH DIFFERENTIATOR</span>
+  <h2>"Radar"</h2>
+  <p class="note">A more memorable product identity: command input, radar metaphor, watchlist thinking, and opportunity/gap scoring. Strong brand potential, but not the safest pre-launch move.</p>
+
+  <div class="swatches">
+    <div class="sw"><i style="background:#0b0f17"></i>ink #0b0f17</div>
+    <div class="sw"><i style="background:#11151f"></i>panel</div>
+    <div class="sw"><i style="background:#c6f24e"></i>signal lime</div>
+    <div class="sw"><i style="background:#38bdf8"></i>data cyan</div>
+    <div class="sw"><i style="background:#f5f5f0"></i>paper</div>
+    <div class="sw"><i style="background:#fb7185"></i>alert</div>
+    <div class="sw"><i style="background:#8a8f98"></i>muted</div>
+  </div>
+
+  <div class="spec">
+    <div class="row"><b>1 - Design name</b><span>Radar</span></div>
+    <div class="row"><b>2 - Positioning angle</b><span>Your always-on competitive radar for market gaps, threats, and moves worth tracking.</span></div>
+    <div class="row"><b>3 - Best-suited user</b><span>Bootstrapped founders and operators who want a sharp tool with a stronger personality.</span></div>
+    <div class="row"><b>4 - Landing page</b><span>Command-style hero input, report-building preview, radar/watchlist motif, punchy pricing, and stronger product voice.</span></div>
+    <div class="row"><b>5 - Dashboard</b><span>Command center with watchlist chips, report cards, gap/opportunity score, and recent scan activity.</span></div>
+    <div class="row"><b>6 - Report page</b><span>Briefing memo with verdict, gap score, watchlist action, cited evidence, and a compact competitor head-to-head.</span></div>
+    <div class="row"><b>7 - Navigation</b><span>Compact rail or command bar later. Do not introduce before the current product has enough repeat-use density.</span></div>
+    <div class="row"><b>8 - Colour scheme</b><span>Near-black UI, paper-toned report content, electric lime CTA, cyan data, coral alerts.</span></div>
+    <div class="row"><b>9 - Typography</b><span>Later: display grotesk plus mono metrics. Pre-launch: do not add this complexity.</span></div>
+    <div class="row"><b>10 - UI components</b><span>Score meters, command input, watchlist chips, source counters, and motion-safe progress log.</span></div>
+    <div class="row"><b>11 - Button style</b><span>High-contrast lime primary, dark outlines, crisp focus glow, smaller radius.</span></div>
+    <div class="row"><b>12 - Card style</b><span>Dark panel cards and paper report surfaces. Needs careful contrast testing.</span></div>
+    <div class="row"><b>13 - Form / input</b><span>Global paste-a-URL command input. Strong first-action UX, but it changes the feel of the whole product.</span></div>
+    <div class="row"><b>14 - Table / report</b><span>Memo sections plus compact mono comparison table and score callouts.</span></div>
+    <div class="row"><b>15 - Pricing page</b><span>Bold single Pro card: "Stop guessing. $79/mo." Still keeps one free report and Stripe trust copy.</span></div>
+    <div class="row"><b>16 - Mobile</b><span>Command bar and score meters must be simplified. Motion should reduce or disable on mobile.</span></div>
+    <div class="row"><b>17 - Trust elements</b><span>Sources scanned count, citations, clear score explanation, Stripe billing, no-card first report.</span></div>
+    <div class="row"><b>18 - Supports conversion</b><span>Memorable input-as-hero and score mechanic create a stronger hook than generic SaaS layouts.</span></div>
+    <div class="row"><b>19 - Supports efficiency</b><span>Score and watchlist give returning users a fast read without opening every report.</span></div>
+    <div class="row"><b>20 - Inspired by</b><span>Perplexity's input-first UI and Linear's dark restraint, but made more ownable for competitive intelligence.</span></div>
+    <div class="row"><b>21 - Why it fits CompeteIQ</b><span>It can become a stronger brand signature once the core funnel is proven and customers want repeat tracking.</span></div>
+  </div>
+
+  <h4>Wireframes - Draft 3</h4>
+  <div class="wfgrid">
+    <div class="wf"><div class="ti">Homepage</div>
+      <div class="bar" style="background:#0b0f17"><span>CompeteIQ Radar</span><span>Login - Start</span></div>
+      <div class="row"><div class="box lime xtall">H1: Scan your market before they move<br>[paste competitor URL] [Scan]</div></div>
+      <div class="row"><div class="box dark">report builds live: scan - read - score - brief</div></div>
+      <div class="row"><div class="box">watchlist feature strip</div></div>
+      <div class="row"><div class="box lime">Pro $79/mo - always-on competitive radar</div></div>
+    </div>
+    <div class="wf"><div class="ti">Pricing</div>
+      <div class="bar" style="background:#0b0f17"><span>Pricing</span><span>Start free</span></div>
+      <div class="row"><div class="box dark xtall">PRO - $79/mo<br>gap scores - watchlist - unlimited reports<br>[Start with 1 free scan]</div></div>
+      <div class="row"><div class="box">how scoring works - FAQ - Stripe billing</div></div>
+    </div>
+    <div class="wf"><div class="ti">Dashboard</div>
+      <div class="row"><div class="box side xtall lime">Rail</div>
+        <div style="flex:1">
+          <div class="bar" style="background:#0b0f17"><span>Command: scan URL</span><span>Pro</span></div>
+          <div class="row"><div class="box dark">watchlist chips</div></div>
+          <div class="row"><div class="box tall">report cards with gap score</div></div>
+          <div class="row"><div class="box">recent activity</div></div>
+        </div></div>
+    </div>
+    <div class="wf"><div class="ti">Report detail</div>
+      <div class="bar" style="background:#0b0f17"><span>Briefing memo</span><span>Watch - Copy</span></div>
+      <div class="row"><div class="box lime">Verdict + gap score 72</div></div>
+      <div class="row"><div class="box xtall">memo body, callouts, evidence</div></div>
+      <div class="row"><div class="box">head-to-head table</div></div>
+      <div class="row"><div class="box">sources scanned and citations</div></div>
+    </div>
+    <div class="wf"><div class="ti">Billing / account</div>
+      <div class="bar" style="background:#0b0f17"><span>Billing</span><span>Account</span></div>
+      <div class="row"><div class="box lime">Plan active - scans unlocked</div></div>
+      <div class="row"><div class="box">Manage billing via Stripe</div></div>
+      <div class="row"><div class="box">watchlist size - account email - support</div></div>
+    </div>
+    <div class="wf"><div class="ti">Empty + loading states</div>
+      <div class="row"><div class="box dark tall">EMPTY: No market signal yet<br>[Paste a competitor URL]</div></div>
+      <div class="row"><div class="box lime tall">LOADING: scan log + progress<br>fetching - reading - scoring - writing</div></div>
+    </div>
+  </div>
+
+  <div class="pros"><b>Strengths:</b> most memorable brand, strongest unique hook, best future retention story if watchlists and scoring become real features.</div>
+  <div class="warn"><b>Trade-off:</b> Highest risk before launch. Dark theme, scoring, command navigation, and motion all add design, accessibility, and product-definition work.</div>
+  <div class="why"><b>Implementation stance:</b> Keep it as a post-launch experiment. Prototype only after the Draft 1 funnel is public and Draft 2 report polish is validated.</div>
+</div>
+
+<!-- ===================== RECOMMENDATION ===================== -->
+<div class="rec" id="reco">
+  <h2>Recommendation matrix</h2>
+  <table>
+    <thead><tr><th>Goal</th><th>Best draft</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><b>Fastest public launch</b></td><td>Draft 1 - Clear Signal</td><td>Uses the existing app structure, component classes, palette, and routes. Lowest QA and dependency risk.</td></tr>
+      <tr><td><b>Highest perceived value</b></td><td>Draft 2 - Briefing Room</td><td>The report feels like a decision-grade briefing, which better supports the $79/mo offer.</td></tr>
+      <tr><td><b>Strongest long-term SaaS brand</b></td><td>Draft 2 - Briefing Room</td><td>It creates credible SaaS polish without forcing a risky identity change or heavy pre-launch tooling.</td></tr>
+      <tr><td><b>Most distinctive future brand</b></td><td>Draft 3 - Radar</td><td>Gap score, watchlist, and command input are ownable, but they should wait until the core funnel is live.</td></tr>
+      <tr><td><b>Lowest-cost solo operation</b></td><td>Draft 1 - Clear Signal</td><td>Fewest dependencies, simplest maintenance, easiest for Codex or Claude Code to modify safely.</td></tr>
+    </tbody>
+  </table>
+  <h4>Suggested path</h4>
+  <p style="color:#cbd5e1">Launch with <b>Draft 1 - Clear Signal</b>. Pull in Draft 2's best content ideas immediately where they cost almost nothing: real report preview, answer-first report hierarchy, stronger trust copy, and pricing value framing. Save Draft 2's component-system polish and Draft 3's radar/gap-score identity for post-launch work.</p>
+</div>
+
+<footer>
+  CompeteIQ Frontend Design Strategy - Part 2: Design Drafts. Research/design artifact only; no production code changed. See <code>03-tooling-and-recommendation.html</code> for tooling and implementation guidance.
+</footer>
+
+</div>
+</body>
+</html>

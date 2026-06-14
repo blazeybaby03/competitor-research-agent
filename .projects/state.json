@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "providers": {
+    "agentmail": {
+      "name": "AgentMail"
+    }
+  },
+  "resources": {
+    "agentmail-api": {
+      "name": "agentmail-api",
+      "providerName": "AgentMail",
+      "serviceId": "api"
+    },
+    "agentmail-plan": {
+      "name": "agentmail-plan",
+      "providerName": "AgentMail",
+      "serviceId": "free"
+    }
+  }
+}

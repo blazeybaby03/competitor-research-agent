@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CompeteIQ — App</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#0f172a;}
+  button,input{font-family:'Inter',sans-serif;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+/* ── tweak context (density / signal / surface) ── */
+const TweakCtx = React.createContext({ density:'comfortable', signal:'balanced', surface:'bright' });
+const useTwk = () => React.useContext(TweakCtx);
+
+/* ── tokens ── */
+const T = {
+  navy:'#0f223a', brand:'#0284c7', brand700:'#0369a1', brand800:'#075985',
+  sky50:'#f0f9ff', sky100:'#e0f2fe', sky200:'#bae6fd', sky400:'#38bdf8',
+  amber:'#f59e0b', amber50:'#fffbeb', amber200:'#fde68a', amber600:'#d97706',
+  fg1:'#0f172a', fg2:'#475569', fg3:'#5b6472', fg4:'#94a3b8',
+  bg:'#f7f8fa', surface:'#fff', line:'#e4e8ee', lineSoft:'#eef2f7',
+  positive:'#16a34a', positive50:'#f0fdf4', positive200:'#bbf7d0', positive700:'#166534',
+  alert:'#dc2626', alert50:'#fef2f2', alert200:'#fecaca', alert700:'#991b1b',
+};
+
+/* ── inline icons ── */
+const Icon = ({ d, size=16, stroke=T.fg2 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d}/>
+  </svg>
+);
+
+const icons = {
+  file: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.brand} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+  fileSm: (color='#0284c7') => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
+  check: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.positive} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  x:     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.alert} strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  copy:  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
+  share: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
+  alert: <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  zap:   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+  back:  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+  globe: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+  bars:  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  spark: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3L9.5 9.5 3 12l6.5 2.5L12 21l2.5-6.5L21 12l-6.5-2.5z"/></svg>,
+  plus:  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  retry: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>,
+  trash: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
+  search:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  card:  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+};
+
+/* ── wordmark ── */
+const AppWordmark = () => (
+  <svg width="140" height="28" viewBox="0 0 180 36" fill="none">
+    <g transform="translate(2 2)">
+      <circle cx="16" cy="16" r="15" stroke={T.navy} strokeWidth="2"/>
+      <circle cx="16" cy="16" r="9" stroke="#cbd5e1" strokeWidth="1.5"/>
+      <circle cx="16" cy="16" r="2.5" fill={T.brand}/>
+      <path d="M16 16 L29 9" stroke={T.brand} strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="24.5" cy="11.5" r="2.2" fill={T.amber}/>
+    </g>
+    <text x="42" y="25" fontFamily="Inter,sans-serif" fontSize="21" fontWeight="800" letterSpacing="-0.02em">
+      <tspan fill={T.fg1}>Compete</tspan><tspan fill={T.brand}>IQ</tspan>
+    </text>
+  </svg>
+);
+
+/* ── plan badge ── */
+const PlanBadge = ({ plan }) => plan === 'pro'
+  ? <span style={{ display:'inline-flex', alignItems:'center', gap:5, background:T.positive50, color:T.positive700, border:`1px solid ${T.positive200}`, borderRadius:999, fontSize:12, fontWeight:700, padding:'4px 10px' }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background:T.positive, display:'inline-block' }}></span>Pro active
+    </span>
+  : <span style={{ display:'inline-flex', alignItems:'center', gap:5, background:T.amber50, color:T.amber600, border:`1px solid ${T.amber200}`, borderRadius:999, fontSize:12, fontWeight:700, padding:'4px 10px' }}>
+      {icons.alert} Trial · 1 free report
+    </span>;
+
+/* ── status badge ── */
+const StatusBadge = ({ status }) => {
+  const map = {
+    completed: { bg:T.positive50, color:T.positive700, border:T.positive200, dot:T.positive, label:'Completed' },
+    generating:{ bg:T.amber50,    color:T.amber600,    border:T.amber200,    dot:T.amber,    label:'Generating…' },
+    failed:    { bg:T.alert50,    color:T.alert700,    border:T.alert200,    dot:T.alert,    label:'Failed' },
+  };
+  const s = map[status] || map.completed;
+  return (
+    <span style={{ display:'inline-flex', alignItems:'center', gap:5, background:s.bg, color:s.color, border:`1px solid ${s.border}`, borderRadius:999, fontSize:11, fontWeight:700, padding:'3px 9px', whiteSpace:'nowrap' }}>
+      <span style={{ width:6, height:6, borderRadius:'50%', background:s.dot, display:'inline-block' }}></span>{s.label}
+    </span>
+  );
+};
+
+/* ── app nav ── */
+const AppNav = ({ activePage, onNav, plan }) => (
+  <nav style={{ background:T.surface, borderBottom:`1px solid ${T.line}`, position:'sticky', top:0, zIndex:50 }}>
+    <div style={{ maxWidth:1200, margin:'0 auto', padding:'0 24px', height:58, display:'flex', alignItems:'center', gap:0 }}>
+      <button onClick={() => onNav('dashboard')} style={{ background:'none', border:'none', cursor:'pointer', padding:0, display:'flex' }}><AppWordmark /></button>
+      <div style={{ display:'flex', alignItems:'center', gap:2, marginLeft:28, flex:1 }}>
+        {[['dashboard','Dashboard'],['reports','Reports']].map(([p,l]) => (
+          <button key={p} onClick={() => onNav(p)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:activePage===p?600:500, color:activePage===p?T.fg1:T.fg3, padding:'6px 14px', borderRadius:8, borderBottom:activePage===p?`2px solid ${T.brand}`:'2px solid transparent' }}>{l}</button>
+        ))}
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <PlanBadge plan={plan} />
+        <span style={{ fontSize:13, color:T.fg3, padding:'0 8px', borderLeft:`1px solid ${T.line}`, marginLeft:4 }}>jane@acme.com</span>
+        <a href="Marketing Site.html" style={{ fontSize:13, color:T.fg4, padding:'6px 8px', textDecoration:'none' }}>← Site</a>
+      </div>
+    </div>
+  </nav>
+);
+
+/* ══════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════ */
+const REPORTS_DATA = [
+  { id:1, name:'Acme Coffee Roasters',        competitors:5, date:'Jun 3, 2026',  status:'completed', gaps:3 },
+  { id:2, name:'Blue Bottle Competitor Check', competitors:3, date:'May 29, 2026', status:'completed', gaps:5 },
+  { id:3, name:'Roastery Market Scan',         competitors:4, date:'May 22, 2026', status:'failed',    gaps:0 },
+];
+
+const URL_ERROR_DATA = [
+  { value:'https://brewbar.io',       error:null },
+  { value:'dailygrind.io',           error:'Missing protocol — use https://dailygrind.io' },
+  { value:'https://roastery-co.net', error:'Domain unreachable — check this URL' },
+  { value:'https://beancraft.com',   error:null },
+  { value:'https://brewbar.io',      error:'Duplicate — already added as URL 1' },
+];
+
+const DashboardPage = ({ onNav, plan, urlErrors, empty }) => {
+  const urlData = urlErrors
+    ? URL_ERROR_DATA
+    : ['https://competitor-one.com','https://competitor-two.com','https://competitor-three.com','',''].map(v=>({ value:v, error:null }));
+  const errorCount = urlErrors ? URL_ERROR_DATA.filter(u=>u.error).length : 0;
+  const hasReports = !empty;
+
+  return (
+    <div style={{ background:T.bg, minHeight:'calc(100vh - 58px)', padding:'32px 24px 64px' }}>
+      <div style={{ maxWidth:1200, margin:'0 auto' }}>
+
+        {/* KPI row */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, marginBottom:24 }}>
+          <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:12, padding:'18px 20px', boxShadow:'0 1px 2px rgba(16,24,40,.04)' }}>
+            <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg4, marginBottom:4 }}>Reports run</div>
+            <div style={{ fontSize:28, fontWeight:800, color:T.fg1, letterSpacing:'-.02em', lineHeight:1 }}>{hasReports ? '3' : '0'}</div>
+          </div>
+          <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:12, padding:'18px 20px', boxShadow:'0 1px 2px rgba(16,24,40,.04)' }}>
+            <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg4, marginBottom:4 }}>Competitors tracked</div>
+            <div style={{ fontSize:28, fontWeight:800, color:T.fg1, letterSpacing:'-.02em', lineHeight:1 }}>{hasReports ? '12' : '0'}</div>
+          </div>
+          <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:12, padding:'18px 20px', boxShadow:'0 1px 2px rgba(16,24,40,.04)' }}>
+            <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg4, marginBottom:4 }}>Plan</div>
+            <div style={{ marginTop:4 }}><PlanBadge plan={plan} /></div>
+          </div>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24 }}>
+          {/* Generate form */}
+          <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.05)', padding:24 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, paddingBottom:16, borderBottom:`1px solid ${T.lineSoft}` }}>
+              <h2 style={{ fontSize:15, fontWeight:700, color:T.fg1, margin:0 }}>Generate a competitive briefing</h2>
+            </div>
+
+            <label style={{ display:'block', fontSize:13, fontWeight:600, color:T.fg1, marginBottom:6 }}>Business name</label>
+            <input style={{ width:'100%', fontSize:14, color:T.fg1, background:T.surface, border:`1px solid ${T.line}`, borderRadius:8, padding:'10px 12px', outline:'none', marginBottom:14 }} defaultValue="Acme Coffee Roasters" readOnly />
+
+            <label style={{ display:'block', fontSize:13, fontWeight:600, color:T.fg1, marginBottom:6 }}>What you sell</label>
+            <input style={{ width:'100%', fontSize:14, color:T.fg1, background:T.surface, border:`1px solid ${T.line}`, borderRadius:8, padding:'10px 12px', outline:'none', marginBottom:14 }} defaultValue="Specialty single-origin coffee, direct-to-consumer" readOnly />
+
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+              <label style={{ fontSize:13, fontWeight:600, color:T.fg1 }}>Competitor URLs <span style={{ fontWeight:400, color:T.fg4 }}>(up to 5)</span></label>
+              {urlErrors && (
+                <span style={{ display:'inline-flex', alignItems:'center', gap:5, background:T.alert50, color:T.alert700, border:`1px solid ${T.alert200}`, borderRadius:999, fontSize:11, fontWeight:700, padding:'3px 9px' }}>
+                  {icons.alert} {errorCount} issue{errorCount !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display:'flex', flexDirection:'column' }}>
+              {urlData.map((item, i) => {
+                const hasErr = Boolean(item.error);
+                return (
+                  <div key={i} style={{ marginBottom: hasErr ? 4 : 8 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <div style={{ width:24, height:24, borderRadius:'50%', background: hasErr ? T.alert50 : '#f1f5f9', border:`1px solid ${hasErr ? T.alert200 : T.line}`, fontSize:11, fontWeight:700, color: hasErr ? T.alert : T.fg3, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                        {hasErr ? icons.alert : i+1}
+                      </div>
+                      <input style={{ flex:1, fontSize:13, color: hasErr ? T.alert700 : T.fg1, background: hasErr ? '#fff8f8' : T.surface, border:`1px solid ${hasErr ? '#fca5a5' : T.line}`, borderRadius:8, padding:'9px 11px', outline:'none' }} defaultValue={item.value} placeholder="https://competitor.com" readOnly />
+                    </div>
+                    {hasErr && (
+                      <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:11, color:T.alert, fontWeight:500, padding:'4px 0 3px 34px' }}>
+                        {icons.alert} {item.error}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => !urlErrors && onNav('generating')}
+              disabled={urlErrors}
+              style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8, background: urlErrors ? '#94a3b8' : T.brand, color:'#fff', fontWeight:700, fontSize:15, padding:13, borderRadius:10, border:'none', cursor: urlErrors ? 'not-allowed' : 'pointer', marginTop:6 }}
+            >
+              {urlErrors
+                ? <>{icons.alert} Resolve {errorCount} URL error{errorCount!==1?'s':''} to continue</>
+                : <>{icons.zap} Generate briefing</>
+              }
+            </button>
+            {!urlErrors && plan === 'trial' && (
+              <p style={{ textAlign:'center', fontSize:12, color:T.fg4, margin:'10px 0 0' }}>
+                1 free report remaining.{' '}
+                <button onClick={() => onNav('billing')} style={{ background:'none', border:'none', color:T.brand, cursor:'pointer', fontSize:12, fontWeight:600 }}>Upgrade to Pro →</button>
+              </p>
+            )}
+          </div>
+
+          {/* Recent reports */}
+          <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.05)', padding:24 }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20, paddingBottom:16, borderBottom:`1px solid ${T.lineSoft}` }}>
+              <h2 style={{ fontSize:15, fontWeight:700, color:T.fg1, margin:0 }}>Recent reports</h2>
+              {hasReports && <button onClick={() => onNav('reports')} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:T.brand, fontWeight:600 }}>View all →</button>}
+            </div>
+
+            {hasReports ? REPORTS_DATA.map(r => (
+              <div key={r.id} onClick={() => onNav('report')} style={{ display:'flex', alignItems:'center', gap:14, padding:'14px 0', borderBottom:`1px solid ${T.lineSoft}`, cursor:'pointer' }}>
+                <div style={{ width:36, height:36, borderRadius:8, background:T.sky50, border:`1px solid ${T.sky200}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {icons.file}
+                </div>
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontSize:14, fontWeight:600, color:T.fg1, marginBottom:2, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{r.name}</div>
+                  <div style={{ fontSize:12, color:T.fg4 }}>{r.competitors} competitors · {r.date}</div>
+                </div>
+                <StatusBadge status={r.status} />
+              </div>
+            )) : (
+              /* Clear Signal: welcoming empty state */
+              <div style={{ textAlign:'center', padding:'48px 24px', animation:'fadeUp .35s ease' }}>
+                <div style={{ width:56, height:56, borderRadius:14, background:T.sky50, border:`1px solid ${T.sky200}`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 18px' }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T.brand} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div style={{ fontSize:15, fontWeight:700, color:T.fg1, marginBottom:8 }}>Your first briefing is one click away</div>
+                <div style={{ fontSize:13, color:T.fg3, lineHeight:1.65, maxWidth:240, margin:'0 auto 20px' }}>Fill in your business details and add a competitor URL to get started. It takes under 60 seconds.</div>
+                <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center' }}>
+                  {['No credit card','Cited findings','5 competitors'].map(t => (
+                    <span key={t} style={{ fontSize:12, fontWeight:500, color:T.fg3, background:T.bg, border:`1px solid ${T.line}`, borderRadius:999, padding:'4px 10px' }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   GENERATING PAGE
+══════════════════════════════════════ */
+const STEPS = [
+  { key:'scraping',  label:'Scraping competitor sites',  sub:'Fetching pages from 5 URLs via ScraperAPI',         icon: 'globe'   },
+  { key:'reading',   label:'Reading pages',               sub:'Extracting content, pricing, and structure',         icon: 'file'    },
+  { key:'analyzing', label:'Analyzing positioning',       sub:'Comparing features, tone, and market gaps',          icon: 'bars'    },
+  { key:'writing',   label:'Writing your briefing',       sub:'Claude is drafting the executive summary',           icon: 'spark'   },
+];
+
+const SkeletonLine = ({ w='100%', h=14, mb=8 }) => (
+  <div style={{ width:w, height:h, borderRadius:4, background:'linear-gradient(90deg,#eef2f7 0%,#e4e8ee 50%,#eef2f7 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.6s ease infinite', marginBottom:mb }}></div>
+);
+
+const GeneratingPage = ({ onNav }) => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep(s => {
+        if (s >= STEPS.length - 1) { clearInterval(interval); setTimeout(() => setDone(true), 900); return s; }
+        return s + 1;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (done) return (
+    <div style={{ background:T.bg, minHeight:'calc(100vh - 58px)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ textAlign:'center', maxWidth:420, animation:'fadeUp .4s ease' }}>
+        <div style={{ width:56, height:56, borderRadius:'50%', background:T.positive50, border:`2px solid ${T.positive200}`, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px' }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={T.positive} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 style={{ fontSize:22, fontWeight:800, color:T.fg1, margin:'0 0 10px' }}>Briefing ready</h2>
+        <p style={{ color:T.fg3, fontSize:14, margin:'0 0 24px', lineHeight:1.6 }}>Your competitive report is complete. 5 competitors, 25 pages, 3 market gaps identified.</p>
+        <button onClick={() => onNav('report')} style={{ background:T.brand, color:'#fff', border:'none', borderRadius:10, padding:'13px 28px', fontSize:15, fontWeight:700, cursor:'pointer' }}>Open report →</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ background:T.bg, minHeight:'calc(100vh - 58px)', padding:'48px 24px' }}>
+      <div style={{ maxWidth:800, margin:'0 auto' }}>
+        <div style={{ textAlign:'center', marginBottom:40 }}>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:8, background:T.amber50, border:`1px solid ${T.amber200}`, borderRadius:999, padding:'6px 14px', marginBottom:18 }}>
+            <span style={{ display:'inline-block', width:8, height:8, borderRadius:'50%', background:T.amber, animation:'pulse 1.4s ease-in-out infinite' }}></span>
+            <span style={{ fontSize:12, fontWeight:700, color:T.amber600, textTransform:'uppercase', letterSpacing:'.06em' }}>Generating your briefing</span>
+          </div>
+          <h1 style={{ fontSize:26, fontWeight:800, color:T.fg1, margin:'0 0 8px', letterSpacing:'-.01em' }}>Acme Coffee Roasters</h1>
+          <p style={{ color:T.fg3, fontSize:14 }}>5 competitor URLs · typically takes 45–75 seconds</p>
+        </div>
+
+        <div style={{ display:'grid', gridTemplateColumns:'300px 1fr', gap:24 }}>
+          {/* Steps — navy panel */}
+          <div style={{ background:T.navy, borderRadius:14, padding:24, display:'flex', flexDirection:'column', gap:0 }}>
+            {STEPS.map((step, i) => {
+              const state = i < activeStep ? 'done' : i === activeStep ? 'active' : 'pending';
+              return (
+                <div key={step.key} style={{ display:'flex', gap:14, paddingBottom: i < STEPS.length-1 ? 20 : 0, position:'relative' }}>
+                  {i < STEPS.length-1 && (
+                    <div style={{ position:'absolute', left:15, top:32, width:2, height:'calc(100% - 12px)', background: state==='done' ? T.brand : 'rgba(255,255,255,.12)', borderRadius:1 }}></div>
+                  )}
+                  <div style={{ width:32, height:32, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', background: state==='done' ? T.brand : state==='active' ? T.amber : 'rgba(255,255,255,.1)', border: state==='pending' ? '1px solid rgba(255,255,255,.15)' : 'none', color: state==='pending' ? 'rgba(255,255,255,.3)' : '#fff' }}>
+                    {state === 'done'
+                      ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      : state === 'active'
+                        ? <div style={{ width:14, height:14, border:'2px solid #fff', borderTopColor:'transparent', borderRadius:'50%', animation:'spin .8s linear infinite' }}></div>
+                        : icons[step.icon === 'globe' ? 'globe' : step.icon === 'file' ? 'file' : step.icon === 'bars' ? 'bars' : 'spark']
+                    }
+                  </div>
+                  <div style={{ paddingTop:5 }}>
+                    <div style={{ fontSize:13, fontWeight: state==='pending' ? 400 : 600, color: state==='pending' ? 'rgba(255,255,255,.35)' : '#fff', marginBottom:2 }}>{step.label}</div>
+                    {state === 'active' && <div style={{ fontSize:11, color:'#7dd3fc', lineHeight:1.5 }}>{step.sub}</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Skeleton preview */}
+          <div style={{ background:T.surface, borderRadius:14, border:`1px solid ${T.line}`, overflow:'hidden' }}>
+            <div style={{ background:T.navy, padding:'14px 18px' }}>
+              <SkeletonLine w="220px" h={12} mb={4} />
+              <SkeletonLine w="160px" h={9} mb={0} />
+            </div>
+            <div style={{ padding:18 }}>
+              <SkeletonLine w="120px" h={10} mb={10} />
+              <SkeletonLine w="100%" h={12} mb={6} />
+              <SkeletonLine w="92%" h={12} mb={6} />
+              <SkeletonLine w="78%" h={12} mb={18} />
+              <SkeletonLine w="100px" h={10} mb={12} />
+              <div style={{ display:'flex', gap:10, marginBottom:16 }}>
+                {[1,2,3].map(n => <div key={n} style={{ flex:1, height:62, borderRadius:8, background:'linear-gradient(90deg,#eef2f7 0%,#e4e8ee 50%,#eef2f7 100%)', backgroundSize:'200% 100%', animation:'shimmer 1.6s ease infinite' }}></div>)}
+              </div>
+              <SkeletonLine w="80px" h={10} mb={10} />
+              <SkeletonLine w="100%" h={11} mb={5} />
+              <SkeletonLine w="86%" h={11} mb={5} />
+              <SkeletonLine w="60%" h={11} mb={0} />
+            </div>
+          </div>
+        </div>
+        <p style={{ textAlign:'center', fontSize:12, color:T.fg4, marginTop:20 }}>CompeteIQ is scraping live pages — results reflect your competitors' current sites.</p>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   REPORT PAGE — Clear Signal: jump nav actually scrolls
+══════════════════════════════════════ */
+const REPORT_SECTIONS = [
+  { key:'summary',     label:'Summary' },
+  { key:'gaps',        label:'Gaps' },
+  { key:'actions',     label:'Actions' },
+  { key:'competitors', label:'Competitors' },
+  { key:'sources',     label:'Sources' },
+];
+
+const SourceChip = ({ domain, pages }) => (
+  <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11, fontWeight:500, color:'#334155', background:T.surface, border:`1px solid ${T.line}`, borderRadius:999, padding:'4px 10px 4px 8px' }}>
+    <span style={{ width:14, height:14, borderRadius:3, background:T.sky100, display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:T.brand }}>{domain[0].toUpperCase()}</span>
+    {domain} <span style={{ color:T.fg4 }}>· {pages}</span>
+  </span>
+);
+
+const ReportPage = ({ onNav }) => {
+  const [activeSection, setActiveSection] = useState('summary');
+  const bodyRef = useRef(null);
+
+  const scrollToSection = (key) => {
+    setActiveSection(key);
+    const el = document.getElementById(`rpt-${key}`);
+    if (el) {
+      // offset for sticky app nav (58px) + sticky jump nav (42px) + breathing room
+      const offset = 58 + 42 + 12;
+      const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div style={{ background:T.bg, minHeight:'calc(100vh - 58px)' }}>
+      {/* Navy masthead */}
+      <div style={{ background:T.navy, color:'#fff', padding:'24px 24px 28px' }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:16 }}>
+          <div>
+            <button onClick={() => onNav('dashboard')} style={{ background:'none', border:'none', cursor:'pointer', color:'rgba(255,255,255,.55)', fontSize:12, fontWeight:600, padding:'0 0 10px', display:'flex', alignItems:'center', gap:5 }}>
+              {icons.back} Dashboard
+            </button>
+            <div style={{ fontSize:11, fontWeight:700, letterSpacing:'.07em', textTransform:'uppercase', color:'#7dd3fc', marginBottom:6 }}>COMPETITIVE BRIEFING</div>
+            <h1 style={{ fontSize:22, fontWeight:800, color:'#fff', margin:'0 0 6px', letterSpacing:'-.01em' }}>Acme Coffee Roasters</h1>
+            <p style={{ color:'rgba(255,255,255,.6)', fontSize:13, margin:0 }}>Jun 3, 2026 · 5 competitors · 25 pages · 61 seconds</p>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            {[{icon:icons.copy, label:'Copy report'},{icon:icons.share, label:'Share'}].map(({icon,label}) => (
+              <button key={label} style={{ display:'flex', alignItems:'center', gap:6, background:'rgba(255,255,255,.1)', color:'#fff', border:'1px solid rgba(255,255,255,.18)', borderRadius:8, padding:'9px 14px', fontSize:13, fontWeight:600, cursor:'pointer' }}>
+                {icon}{label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Jump nav — sticky, scrolls to section */}
+      <div style={{ background:T.surface, borderBottom:`1px solid ${T.line}`, position:'sticky', top:58, zIndex:40 }}>
+        <div style={{ maxWidth:1100, margin:'0 auto', padding:'0 24px', display:'flex', gap:0, overflowX:'auto' }}>
+          {REPORT_SECTIONS.map(({ key, label }) => (
+            <button key={key} onClick={() => scrollToSection(key)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, fontWeight: activeSection===key ? 600 : 500, color: activeSection===key ? T.brand : T.fg3, padding:'12px 14px', borderBottom: activeSection===key ? `2px solid ${T.brand}` : '2px solid transparent', whiteSpace:'nowrap' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div ref={bodyRef} style={{ maxWidth:1100, margin:'0 auto', padding:'28px 24px 80px' }}>
+        {/* Executive summary */}
+        <div id="rpt-summary" style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.05)', padding:24, marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.brand, marginBottom:12 }}>EXECUTIVE SUMMARY</div>
+          <p style={{ fontSize:15, lineHeight:1.75, color:'#334155', margin:0 }}>
+            Acme Coffee Roasters operates in a market where all five direct competitors have significant gaps in <strong>subscription-model UX, mobile checkout, and origin-story content marketing.</strong> Their average price per single bag is 14% higher than Acme's, yet none promote this as a premium signal. The highest-ROI opportunity is a direct-to-consumer subscription bundle, which zero competitors currently offer. A secondary gap exists in mobile-first checkout flows, where four of five competitors score poorly on Core Web Vitals.
+          </p>
+        </div>
+
+        {/* Market gaps */}
+        <div id="rpt-gaps" style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.amber600, marginBottom:12 }}>3 MARKET GAPS IDENTIFIED</div>
+          <div style={{ display:'flex', gap:12 }}>
+            {[
+              { n:1, title:'No subscription offering', body:'Zero of 5 competitors offer a loyalty subscription or recurring bundle.', src:'brewbar.io, roastery.co' },
+              { n:2, title:'Weak mobile checkout UX',  body:'4 of 5 competitors have poor mobile CWV — direct conversion advantage.', src:'beancraft.com, dailygrind.io' },
+              { n:3, title:'Thin origin content',       body:'No competitor ranks for high-volume origin-story keywords. Clean SEO gap.', src:'All 5 competitors' },
+            ].map(g => (
+              <div key={g.n} style={{ background:T.amber50, border:`1px solid ${T.amber200}`, borderRadius:10, padding:16, flex:1, minWidth:0 }}>
+                <div style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.amber600, marginBottom:4 }}>Gap {g.n}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:T.fg1, marginBottom:6 }}>{g.title}</div>
+                <div style={{ fontSize:12, color:T.fg3, lineHeight:1.6, marginBottom:8 }}>{g.body}</div>
+                <div style={{ fontSize:11, color:T.fg4 }}>Source: {g.src}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recommended actions */}
+        <div id="rpt-actions" style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:12 }}>RECOMMENDED ACTIONS</div>
+          <div style={{ display:'flex', gap:12 }}>
+            {[
+              { n:'01', title:'Launch a monthly coffee subscription', why:'First mover in a gap zero competitors occupy. High LTV.' },
+              { n:'02', title:'Rebuild mobile checkout',              why:'Recoverable conversion rate vs 4 weak competitors.' },
+              { n:'03', title:'Publish 8 origin-story posts',         why:'High-volume keywords, zero competing content.' },
+            ].map(a => (
+              <div key={a.n} style={{ background:T.sky50, border:`1px solid ${T.sky200}`, borderRadius:10, padding:16, flex:1, minWidth:0 }}>
+                <div style={{ fontSize:16, fontWeight:800, color:T.brand700, marginBottom:6 }}>{a.n}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:T.fg1, marginBottom:4 }}>{a.title}</div>
+                <div style={{ fontSize:12, color:T.fg3, lineHeight:1.55 }}>{a.why}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Competitor comparison */}
+        <div id="rpt-competitors" style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+          <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:12 }}>COMPETITOR COMPARISON</div>
+          <div style={{ overflowX:'auto' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+              <thead>
+                <tr style={{ background:T.navy }}>
+                  {['Feature','brewbar.io','roastery.co','beancraft.com','dailygrind.io','morebeans.com'].map(h => (
+                    <th key={h} style={{ color:'#fff', padding:'10px 12px', textAlign:'left', fontSize:11, fontWeight:700, letterSpacing:'.04em', textTransform:'uppercase', whiteSpace:'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['Subscription offer',   false,false,false,false,false],
+                  ['Mobile-optimised',     true, false,false,false,true ],
+                  ['Origin story content', false,false,true, false,false],
+                  ['Live chat support',    true, true, false,false,false],
+                  ['Clear pricing page',   true, false,true, true, true ],
+                  ['Blog / content hub',   false,true, false,false,true ],
+                ].map(([feat,...vals], i) => (
+                  <tr key={feat} style={{ background: i%2===0 ? '#fff' : '#fafbfc', borderBottom:`1px solid ${T.lineSoft}` }}>
+                    <td style={{ padding:'9px 12px', fontWeight:500, color:'#334155' }}>{feat}</td>
+                    {vals.map((v,j) => <td key={j} style={{ padding:'9px 12px' }}>{v ? icons.check : icons.x}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Sources */}
+        <div id="rpt-sources" style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24 }}>
+          <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg2, marginBottom:12 }}>SOURCES SCANNED</div>
+          <div style={{ display:'flex', gap:8, flexWrap:'wrap', alignItems:'center' }}>
+            {[['brewbar.io','6 pages'],['roastery.co','4 pages'],['beancraft.com','5 pages'],['dailygrind.io','3 pages'],['morebeans.com','7 pages']].map(([d,p]) => (
+              <SourceChip key={d} domain={d} pages={p} />
+            ))}
+            <span style={{ fontSize:12, color:T.fg4, marginLeft:4 }}>25 pages total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   REPORTS LIST
+══════════════════════════════════════ */
+const ALL_REPORTS = [
+  { id:1, name:'Acme Coffee Roasters',         competitors:5, date:'2026-06-03', dateLabel:'Jun 3, 2026',  status:'completed', gaps:3,  pages:25 },
+  { id:2, name:'Blue Bottle Competitor Check',  competitors:3, date:'2026-05-29', dateLabel:'May 29, 2026', status:'completed', gaps:5,  pages:18 },
+  { id:3, name:'Roastery Market Scan',          competitors:4, date:'2026-05-22', dateLabel:'May 22, 2026', status:'failed',    gaps:0,  pages:0  },
+  { id:4, name:'Craft Coffee Q2 Analysis',      competitors:5, date:'2026-05-15', dateLabel:'May 15, 2026', status:'completed', gaps:7,  pages:32 },
+  { id:5, name:'West Coast Roasters Deep Dive', competitors:2, date:'2026-05-08', dateLabel:'May 8, 2026',  status:'completed', gaps:2,  pages:12 },
+  { id:6, name:'Spring Seasonal Audit',         competitors:3, date:'2026-04-30', dateLabel:'Apr 30, 2026', status:'completed', gaps:4,  pages:20 },
+  { id:7, name:'Local Competitor Snapshot',     competitors:5, date:'2026-04-20', dateLabel:'Apr 20, 2026', status:'failed',    gaps:0,  pages:0  },
+  { id:8, name:'Direct Competitors — Q1',       competitors:4, date:'2026-03-12', dateLabel:'Mar 12, 2026', status:'completed', gaps:6,  pages:28 },
+];
+
+const ReportsListPage = ({ onNav }) => {
+  const [query, setQuery]         = useState('');
+  const [filter, setFilter]       = useState('All');
+  const [hovered, setHovered]     = useState(null);
+  const [sortBy, setSortBy]       = useState('date');
+  const [sortDir, setSortDir]     = useState('desc');
+
+  const filtered = React.useMemo(() => {
+    let list = ALL_REPORTS;
+    if (filter !== 'All') list = list.filter(r => r.status === filter.toLowerCase());
+    if (query.trim())     list = list.filter(r => r.name.toLowerCase().includes(query.toLowerCase()));
+    return [...list].sort((a,b) => {
+      const d = sortDir === 'asc' ? 1 : -1;
+      if (sortBy === 'date')  return d*(a.date < b.date ? -1 : 1);
+      if (sortBy === 'name')  return d*a.name.localeCompare(b.name);
+      if (sortBy === 'gaps')  return d*(a.gaps - b.gaps);
+      if (sortBy === 'pages') return d*(a.pages - b.pages);
+      return 0;
+    });
+  }, [query, filter, sortBy, sortDir]);
+
+  const handleSort = col => {
+    if (sortBy === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortBy(col); setSortDir('desc'); }
+  };
+
+  const Th = ({ col, label, center }) => {
+    const active = sortBy === col;
+    return (
+      <th onClick={() => handleSort(col)} style={{ padding:'9px 16px', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color: active ? T.brand : T.fg2, textAlign: center ? 'center' : 'left', background:'#f8fafc', borderBottom:`1px solid ${T.line}`, whiteSpace:'nowrap', cursor:'pointer', userSelect:'none' }}>
+        {label} <span style={{ color: active ? T.brand : '#cbd5e1', fontSize:11 }}>{active ? (sortDir==='asc'?'↑':'↓') : '↕'}</span>
+      </th>
+    );
+  };
+
+  return (
+    <div style={{ background:T.bg, minHeight:'calc(100vh - 58px)', padding:'32px 24px 72px' }}>
+      <div style={{ maxWidth:1100, margin:'0 auto' }}>
+        <div style={{ display:'flex', alignItems:'flex-end', justifyContent:'space-between', marginBottom:24, gap:16 }}>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.06em', color:T.fg4, marginBottom:4 }}>CompeteIQ</div>
+            <h1 style={{ fontSize:26, fontWeight:800, color:T.fg1, margin:0, letterSpacing:'-.02em' }}>Reports</h1>
+          </div>
+          <button onClick={() => onNav('dashboard')} style={{ display:'inline-flex', alignItems:'center', gap:7, background:T.brand, color:'#fff', border:'none', borderRadius:10, padding:'10px 18px', fontSize:14, fontWeight:700, cursor:'pointer' }}>
+            {icons.plus} New report
+          </button>
+        </div>
+
+        <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.05)', overflow:'hidden' }}>
+          {/* Toolbar */}
+          <div style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 16px', borderBottom:`1px solid ${T.lineSoft}`, flexWrap:'wrap' }}>
+            <div style={{ position:'relative', flex:'0 0 240px' }}>
+              <span style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)', color:T.fg4, pointerEvents:'none', display:'flex' }}>{icons.search}</span>
+              <input style={{ width:'100%', paddingLeft:32, paddingRight:10, height:34, fontSize:13, color:T.fg1, background:'#f8fafc', border:`1px solid ${T.line}`, borderRadius:8, outline:'none', boxSizing:'border-box' }} placeholder="Search reports…" value={query} onChange={e => setQuery(e.target.value)} />
+            </div>
+            <div style={{ display:'flex', gap:2 }}>
+              {['All','Completed','Failed'].map(f => (
+                <button key={f} onClick={() => setFilter(f)} style={{ background: filter===f ? '#f1f5f9' : 'none', border: filter===f ? `1px solid ${T.line}` : '1px solid transparent', padding:'5px 12px', fontSize:13, fontWeight: filter===f ? 600 : 500, color: filter===f ? T.fg1 : T.fg3, cursor:'pointer', borderRadius:7 }}>{f}</button>
+              ))}
+            </div>
+            <span style={{ marginLeft:'auto', fontSize:12, color:T.fg4 }}>{filtered.length} report{filtered.length!==1?'s':''}</span>
+          </div>
+
+          {filtered.length > 0 ? (
+            <div style={{ overflowX:'auto' }}>
+              <table style={{ width:'100%', borderCollapse:'collapse', minWidth:680 }}>
+                <thead>
+                  <tr>
+                    <Th col="name" label="Report" />
+                    <Th col="date" label="Date" />
+                    <th style={{ padding:'9px 16px', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.fg2, textAlign:'center', background:'#f8fafc', borderBottom:`1px solid ${T.line}` }}>Competitors</th>
+                    <Th col="gaps"  label="Gaps"  center />
+                    <Th col="pages" label="Pages" center />
+                    <th style={{ padding:'9px 16px', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.fg2, background:'#f8fafc', borderBottom:`1px solid ${T.line}` }}>Status</th>
+                    <th style={{ padding:'9px 16px', fontSize:11, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.fg2, textAlign:'right', background:'#f8fafc', borderBottom:`1px solid ${T.line}` }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((r, idx) => {
+                    const last = idx === filtered.length - 1;
+                    return (
+                      <tr key={r.id} style={{ background: hovered===r.id ? '#f8fafc' : '#fff', cursor: r.status==='completed' ? 'pointer' : 'default', transition:'background .08s' }} onMouseEnter={() => setHovered(r.id)} onMouseLeave={() => setHovered(null)} onClick={() => r.status==='completed' && onNav('report')}>
+                        <td style={{ padding:'13px 16px', fontSize:13, color:'#334155', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>
+                          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                            <div style={{ width:30, height:30, borderRadius:7, background: r.status==='failed' ? T.alert50 : T.sky50, border:`1px solid ${r.status==='failed' ? T.alert200 : T.sky200}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                              {icons.fileSm(r.status==='failed' ? T.alert : T.brand)}
+                            </div>
+                            <span style={{ fontWeight:600, color:T.fg1 }}>{r.name}</span>
+                          </div>
+                        </td>
+                        <td style={{ padding:'13px 16px', fontSize:13, color:T.fg2, borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>{r.dateLabel}</td>
+                        <td style={{ padding:'13px 16px', fontSize:13, color:T.fg2, textAlign:'center', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>{r.competitors}</td>
+                        <td style={{ padding:'13px 16px', textAlign:'center', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>
+                          {r.gaps > 0
+                            ? <span style={{ display:'inline-flex', alignItems:'center', gap:4, background:T.amber50, color:T.amber600, border:`1px solid ${T.amber200}`, borderRadius:999, fontSize:11, fontWeight:700, padding:'2px 8px' }}><span style={{ width:5, height:5, borderRadius:'50%', background:T.amber, display:'inline-block' }}></span>{r.gaps}</span>
+                            : <span style={{ color:'#cbd5e1', fontSize:12 }}>—</span>
+                          }
+                        </td>
+                        <td style={{ padding:'13px 16px', fontSize:13, color:T.fg2, textAlign:'center', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>{r.pages > 0 ? r.pages : <span style={{ color:'#cbd5e1' }}>—</span>}</td>
+                        <td style={{ padding:'13px 16px', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}><StatusBadge status={r.status} /></td>
+                        <td style={{ padding:'13px 16px', textAlign:'right', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>
+                          <div style={{ display:'flex', gap:2, justifyContent:'flex-end', alignItems:'center' }}>
+                            {r.status === 'completed' && <button onClick={e => { e.stopPropagation(); onNav('report'); }} style={{ background:'none', border:'none', cursor:'pointer', padding:'5px 8px', borderRadius:6, fontSize:12, fontWeight:600, color:T.brand }}>View →</button>}
+                            {r.status === 'failed'    && <button onClick={e => e.stopPropagation()} style={{ background:'none', border:'none', cursor:'pointer', padding:'5px 8px', borderRadius:6, fontSize:12, fontWeight:600, color:T.amber600, display:'inline-flex', alignItems:'center', gap:4 }}>{icons.retry} Retry</button>}
+                            <button onClick={e => e.stopPropagation()} style={{ background:'none', border:'none', cursor:'pointer', padding:'5px 7px', borderRadius:6, color:T.fg4, display:'inline-flex', alignItems:'center' }}>{icons.trash}</button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ textAlign:'center', padding:'56px 24px' }}>
+              <div style={{ marginBottom:14, display:'flex', justifyContent:'center' }}>{icons.search}</div>
+              <div style={{ fontSize:15, fontWeight:600, color:T.fg1, marginBottom:6 }}>No reports match</div>
+              <div style={{ fontSize:13, color:T.fg4 }}>{query ? `No results for "${query}" — try a different search.` : 'No reports with this status yet.'}</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   BILLING PAGE
+══════════════════════════════════════ */
+const BillingPage = ({ onNav, plan }) => (
+  <div style={{ background:T.bg, minHeight:'calc(100vh - 58px)', padding:'36px 24px 80px' }}>
+    <div style={{ maxWidth:720, margin:'0 auto' }}>
+      <h1 style={{ fontSize:26, fontWeight:800, color:T.fg1, margin:'0 0 24px', letterSpacing:'-.02em' }}>Billing &amp; account</h1>
+      {/* Current plan */}
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, boxShadow:'0 1px 3px rgba(16,24,40,.05)', padding:24, marginBottom:16 }}>
+        <h2 style={{ fontSize:17, fontWeight:700, color:T.fg1, margin:'0 0 18px' }}>Current plan</h2>
+        {[
+          { label:'Plan',         val: <PlanBadge plan={plan} /> },
+          { label:'Reports used', val: plan==='trial' ? '0 of 1 free reports' : 'Unlimited' },
+          { label:'Billing',      val: plan==='trial' ? 'No payment on file' : '$79 / month via Stripe' },
+        ].map(({ label, val }, i, arr) => (
+          <div key={label} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'13px 0', borderBottom: i < arr.length-1 ? `1px solid ${T.lineSoft}` : 'none' }}>
+            <span style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.fg2 }}>{label}</span>
+            {typeof val === 'string' ? <span style={{ fontSize:15, fontWeight:500, color:T.fg1 }}>{val}</span> : val}
+          </div>
+        ))}
+      </div>
+
+      {plan === 'trial' ? (
+        <div style={{ background:T.navy, borderRadius:14, padding:28, color:'#e2e8f0', marginBottom:16 }}>
+          <div style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.07em', color:'#7dd3fc', marginBottom:10 }}>UPGRADE TO PRO</div>
+          <h2 style={{ color:'#fff', fontSize:22, fontWeight:800, margin:'0 0 8px', letterSpacing:'-.01em' }}>Unlimited competitive briefings</h2>
+          <p style={{ color:'rgba(255,255,255,.65)', fontSize:13, margin:'0 0 20px', lineHeight:1.6 }}>$79/mo · up to 5 competitors per report · cancel anytime</p>
+          {['Unlimited reports','Up to 5 competitor URLs','Executive summary + market gap matrix','Source citations on every finding','Secure Stripe billing'].map(f => (
+            <div key={f} style={{ display:'flex', alignItems:'center', gap:9, fontSize:13, color:'rgba(255,255,255,.8)', marginBottom:8 }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>{f}
+            </div>
+          ))}
+          <button style={{ width:'100%', background:T.brand, color:'#fff', border:'none', borderRadius:10, padding:13, fontSize:14, fontWeight:700, cursor:'pointer', marginTop:20 }}>Upgrade to Pro — $79/mo</button>
+          <p style={{ color:'rgba(255,255,255,.35)', fontSize:12, textAlign:'center', marginTop:10 }}>Secure checkout via Stripe. Cancel anytime.</p>
+        </div>
+      ) : (
+        <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24, marginBottom:16 }}>
+          <h2 style={{ fontSize:17, fontWeight:700, color:T.fg1, margin:'0 0 12px' }}>Manage billing</h2>
+          <p style={{ fontSize:14, color:T.fg3, margin:'0 0 16px', lineHeight:1.6 }}>Your next charge of <strong>$79.00</strong> is scheduled for Jul 3, 2026. Billing is handled securely by Stripe.</p>
+          <button style={{ display:'flex', alignItems:'center', gap:7, background:T.surface, color:T.fg1, border:`1px solid ${T.line}`, borderRadius:8, padding:'10px 16px', fontSize:14, fontWeight:600, cursor:'pointer', boxShadow:'0 1px 2px rgba(16,24,40,.04)' }}>
+            {icons.card} Manage billing via Stripe →
+          </button>
+        </div>
+      )}
+
+      <div style={{ background:T.surface, border:`1px solid ${T.line}`, borderRadius:14, padding:24 }}>
+        <h2 style={{ fontSize:17, fontWeight:700, color:T.fg1, margin:'0 0 18px' }}>Account</h2>
+        {[['Email','jane@acme.com'],['Support','hello@competeiq.com']].map(([l,v], i) => (
+          <div key={l} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'13px 0', borderBottom: i === 0 ? `1px solid ${T.lineSoft}` : 'none' }}>
+            <span style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'.05em', color:T.fg2 }}>{l}</span>
+            <span style={{ fontSize:14, color: l==='Support' ? T.brand : T.fg1, fontWeight:500 }}>{v}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ paddingTop:8 }}>
+        <button style={{ background:'none', border:'none', cursor:'pointer', fontSize:13, color:T.fg4, padding:'8px 0' }}>Sign out</button>
+      </div>
+    </div>
+  </div>
+);
+
+/* ══════════════════════════════════════
+   AUTH PAGE
+══════════════════════════════════════ */
+const AuthPage = ({ onNav, initialMode='signin' }) => {
+  const [mode, setMode]     = useState(initialMode);
+  const [showPw, setShowPw] = useState(false);
+  const [pw, setPw]         = useState('');
+  const isSignup = mode === 'signup';
+
+  const strength = pw.length === 0 ? 0 : pw.length < 6 ? 1 : pw.length < 9 ? 2 : pw.length < 13 ? 3 : 4;
+  const sFill  = ['#e4e8ee','#dc2626','#f59e0b',T.brand,T.positive];
+  const sLabel = ['','Too short','Weak','Good','Strong'];
+  const sColor = ['','#dc2626','#d97706',T.brand,T.positive];
+
+  const WordmarkSVG = () => (
+    <svg width="148" height="28" viewBox="0 0 180 36" fill="none">
+      <g transform="translate(2 2)">
+        <circle cx="16" cy="16" r="15" stroke={T.navy} strokeWidth="2"/>
+        <circle cx="16" cy="16" r="9" stroke="#cbd5e1" strokeWidth="1.5"/>
+        <circle cx="16" cy="16" r="2.5" fill={T.brand}/>
+        <path d="M16 16 L29 9" stroke={T.brand} strokeWidth="2" strokeLinecap="round"/>
+        <circle cx="24.5" cy="11.5" r="2.2" fill={T.amber}/>
+      </g>
+      <text x="42" y="25" fontFamily="Inter,sans-serif" fontSize="21" fontWeight="800" letterSpacing="-0.02em">
+        <tspan fill={T.fg1}>Compete</tspan><tspan fill={T.brand}>IQ</tspan>
+      </text>
+    </svg>
+  );
+
+  return (
+    <div style={{ minHeight:'100vh', background:'linear-gradient(170deg,#f0f9ff 0%,#f7f8fa 55%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'32px 24px' }}>
+      <div style={{ background:T.surface, border:'1px solid #dde3ec', borderRadius:20, boxShadow:'0 8px 32px rgba(15,34,58,.10)', padding:'40px 38px', width:'100%', maxWidth:432 }}>
+        <div style={{ display:'flex', justifyContent:'center', marginBottom:30 }}><WordmarkSVG /></div>
+
+        {/* Mode toggle */}
+        <div style={{ display:'flex', background:'#f1f5f9', borderRadius:10, padding:3, gap:3, marginBottom:24 }}>
+          {[['signin','Sign in'],['signup','Create account']].map(([m,l]) => (
+            <button key={m} onClick={() => setMode(m)} style={{ flex:1, padding:'8px 0', fontSize:13, fontWeight: mode===m ? 600 : 500, color: mode===m ? T.fg1 : T.fg3, background: mode===m ? T.surface : 'transparent', border: mode===m ? `1px solid #dde3ec` : '1px solid transparent', borderRadius:8, cursor:'pointer', boxShadow: mode===m ? '0 1px 3px rgba(16,24,40,.06)' : 'none', transition:'all .12s ease' }}>{l}</button>
+          ))}
+        </div>
+
+        {/* Signup trial callout */}
+        {isSignup && (
+          <div style={{ display:'flex', alignItems:'flex-start', gap:10, background:T.sky50, border:`1px solid ${T.sky200}`, borderRadius:10, padding:'11px 14px', marginBottom:22 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.brand} strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink:0, marginTop:1 }}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span style={{ fontSize:13, color:T.brand700, lineHeight:1.45 }}><strong>1 free competitive report</strong> included — no credit card required.</span>
+          </div>
+        )}
+
+        <h1 style={{ fontSize:21, fontWeight:800, color:T.fg1, margin:'0 0 5px', textAlign:'center' }}>{isSignup ? 'Create your account' : 'Welcome back'}</h1>
+        <p style={{ fontSize:14, color:T.fg3, textAlign:'center', margin:'0 0 22px', lineHeight:1.55 }}>{isSignup ? 'Start mapping your competitive landscape.' : 'Sign in to your CompeteIQ account.'}</p>
+
+        {/* Google OAuth */}
+        <button style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:9, padding:11, background:T.surface, color:T.fg1, border:'1px solid #d1d9e4', borderRadius:10, fontSize:14, fontWeight:600, cursor:'pointer', boxShadow:'0 1px 2px rgba(16,24,40,.04)' }}>
+          <svg width="17" height="17" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+
+        <div style={{ display:'flex', alignItems:'center', gap:10, margin:'16px 0' }}>
+          <div style={{ flex:1, height:1, background:T.line }}></div>
+          <span style={{ fontSize:12, color:T.fg4, fontWeight:500, whiteSpace:'nowrap' }}>or continue with email</span>
+          <div style={{ flex:1, height:1, background:T.line }}></div>
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <label style={{ display:'block', fontSize:13, fontWeight:600, color:T.fg1, marginBottom:5 }}>Work email</label>
+          <input style={{ width:'100%', fontSize:14, color:T.fg1, background:T.surface, border:'1px solid #dde3ec', borderRadius:9, padding:'10px 12px', outline:'none', boxSizing:'border-box' }} type="email" placeholder="you@company.com" />
+        </div>
+
+        <div style={{ marginBottom:14 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline', marginBottom:5 }}>
+            <label style={{ fontSize:13, fontWeight:600, color:T.fg1 }}>Password</label>
+            {!isSignup && <button style={{ background:'none', border:'none', color:T.brand, cursor:'pointer', fontSize:12, fontWeight:600, padding:0 }}>Forgot password?</button>}
+          </div>
+          <div style={{ position:'relative' }}>
+            <input style={{ width:'100%', fontSize:14, color:T.fg1, background:T.surface, border:'1px solid #dde3ec', borderRadius:9, padding:'10px 40px 10px 12px', outline:'none', boxSizing:'border-box' }} type={showPw ? 'text' : 'password'} placeholder={isSignup ? 'Create a password (8+ characters)' : 'Enter your password'} value={pw} onChange={e => setPw(e.target.value)} />
+            <button onClick={() => setShowPw(v => !v)} style={{ position:'absolute', right:10, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:T.fg4, padding:2, display:'flex', alignItems:'center' }}>
+              {showPw
+                ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
+          {isSignup && pw.length > 0 && (
+            <div>
+              <div style={{ display:'flex', gap:3, marginTop:6 }}>
+                {[1,2,3,4].map(n => <div key={n} style={{ flex:1, height:3, borderRadius:2, background: n<=strength ? sFill[strength] : T.line, transition:'background .2s' }}></div>)}
+              </div>
+              <div style={{ fontSize:11, color:sColor[strength], marginTop:4, fontWeight:500 }}>{sLabel[strength]}</div>
+            </div>
+          )}
+        </div>
+
+        <button onClick={() => onNav('dashboard')} style={{ width:'100%', padding:12, background:T.brand, color:'#fff', border:'none', borderRadius:10, fontSize:14, fontWeight:700, cursor:'pointer', marginTop:4 }}>
+          {isSignup ? 'Create account' : 'Sign in'} →
+        </button>
+
+        <div style={{ textAlign:'center', marginTop:18, fontSize:12, color:T.fg4, lineHeight:1.7 }}>
+          {isSignup
+            ? <>By signing up you agree to our <a href="#" style={{ color:T.brand, textDecoration:'none' }}>Terms</a> and <a href="#" style={{ color:T.brand, textDecoration:'none' }}>Privacy Policy</a>.</>
+            : <>Don't have an account? <button onClick={() => setMode('signup')} style={{ background:'none', border:'none', color:T.brand, cursor:'pointer', fontSize:12, fontWeight:600, padding:0 }}>Create one free →</button></>
+          }
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════
+   KIT DEMO BAR + ROUTER
+══════════════════════════════════════ */
+const DEMO_PAGES = [
+  ['dashboard',   'Dashboard'],
+  ['url-errors',  'URL errors'],
+  ['empty',       'Empty state'],
+  ['generating',  '60s wait'],
+  ['report',      'Report'],
+  ['billing',     'Billing'],
+  ['reports',     'Reports list'],
+  ['login',       'Login'],
+  ['signup',      'Signup'],
+];
+
+const NAV_ACTIVE = {
+  dashboard:'dashboard', 'url-errors':'dashboard', empty:'dashboard',
+  reports:'reports', generating:'dashboard', report:'reports',
+  billing:'billing',
+};
+
+const App = () => {
+  const [page, setPage] = useState('dashboard');
+  const [plan, setPlan] = useState('trial');
+
+  const nav = (p) => { setPage(p); window.scrollTo({ top:0, behavior:'instant' }); };
+
+  const isAuth   = page === 'login' || page === 'signup';
+  const active   = NAV_ACTIVE[page] || 'dashboard';
+
+  return (
+    <div>
+      {!isAuth && <AppNav activePage={active} onNav={nav} plan={plan} />}
+
+      {/* Kit demo bar */}
+      <div style={{ background:'#0b1e34', padding:'5px 20px', display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+        <span style={{ fontSize:10, fontWeight:700, color:'rgba(255,255,255,.3)', textTransform:'uppercase', letterSpacing:'.07em', marginRight:4 }}>Kit demo</span>
+        <div style={{ display:'flex', gap:4, flexWrap:'wrap' }}>
+          {DEMO_PAGES.map(([p,l]) => (
+            <button key={p} onClick={() => nav(p)} style={{ background: page===p ? T.brand : 'rgba(255,255,255,.08)', color: page===p ? '#fff' : 'rgba(255,255,255,.6)', border:'none', borderRadius:6, padding:'4px 11px', fontSize:11, fontWeight:600, cursor:'pointer', transition:'background .1s' }}>{l}</button>
+          ))}
+        </div>
+        <div style={{ marginLeft:'auto', display:'flex', gap:4, alignItems:'center' }}>
+          <span style={{ fontSize:10, color:'rgba(255,255,255,.3)', textTransform:'uppercase', letterSpacing:'.05em' }}>Plan</span>
+          {['trial','pro'].map(p => (
+            <button key={p} onClick={() => setPlan(p)} style={{ background: plan===p ? T.brand : 'rgba(255,255,255,.08)', color: plan===p ? '#fff' : 'rgba(255,255,255,.6)', border:'none', borderRadius:6, padding:'4px 10px', fontSize:11, fontWeight:600, cursor:'pointer', textTransform:'capitalize' }}>{p}</button>
+          ))}
+        </div>
+      </div>
+
+      {page === 'dashboard'  && <DashboardPage onNav={nav} plan={plan} urlErrors={false} empty={false} />}
+      {page === 'url-errors' && <DashboardPage onNav={nav} plan={plan} urlErrors={true}  empty={false} />}
+      {page === 'empty'      && <DashboardPage onNav={nav} plan={plan} urlErrors={false} empty={true}  />}
+      {page === 'generating' && <GeneratingPage onNav={nav} />}
+      {page === 'report'     && <ReportPage onNav={nav} />}
+      {page === 'billing'    && <BillingPage onNav={nav} plan={plan} />}
+      {page === 'reports'    && <ReportsListPage onNav={nav} />}
+      {page === 'login'      && <AuthPage key="login"  onNav={nav} initialMode="signin" />}
+      {page === 'signup'     && <AuthPage key="signup" onNav={nav} initialMode="signup" />}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

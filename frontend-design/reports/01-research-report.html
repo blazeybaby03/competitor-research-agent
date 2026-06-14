@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CompeteIQ — Frontend Design Research Report</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --ink:#0f172a; --muted:#5b6472; --line:#e4e8ee;
+    --brand:#0284c7; --brand-50:#f0f9ff; --brand-700:#0369a1;
+    --card:#ffffff; --good:#16a34a; --bad:#dc2626; --warn:#d97706;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 22px 96px}
+  header.hero{background:linear-gradient(135deg,#0b3a5c,#0284c7 70%);color:#fff;border-radius:20px;padding:46px 40px;margin-bottom:34px}
+  header.hero .tag{display:inline-block;background:rgba(255,255,255,.16);padding:5px 13px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.02em;margin-bottom:16px}
+  header.hero h1{margin:0 0 10px;font-size:36px;line-height:1.15;font-weight:800;letter-spacing:-.02em}
+  header.hero p{margin:0;max-width:680px;font-size:17px;opacity:.92}
+  header.hero .meta{margin-top:20px;font-size:13px;opacity:.8}
+  h2{font-size:25px;margin:46px 0 14px;letter-spacing:-.01em;border-bottom:2px solid var(--line);padding-bottom:8px}
+  h3{font-size:20px;margin:26px 0 6px}
+  h4{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-700);margin:20px 0 6px}
+  p{margin:8px 0}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;margin:18px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .lead{font-size:17px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:16px 0;background:#fff;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#0f223a;color:#fff;font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+  tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:#fafbfc}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}header.hero{padding:30px 22px}header.hero h1{font-size:28px}}
+  .dim{margin:4px 0 10px}
+  .dim b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:#475569;margin-bottom:1px}
+  ul{margin:6px 0 6px 2px;padding-left:20px}
+  li{margin:4px 0}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;margin-right:6px}
+  .pill.ci{background:#fef3c7;color:#92400e}
+  .pill.mi{background:#dbeafe;color:#1e40af}
+  .pill.ai{background:#ede9fe;color:#6d28d9}
+  .pill.design{background:#dcfce7;color:#166534}
+  .quote{border-left:4px solid var(--brand);background:var(--brand-50);padding:12px 16px;border-radius:0 10px 10px 0;margin:10px 0;font-style:italic;color:#0c4a6e}
+  .quote span{display:block;font-style:normal;font-size:12.5px;color:var(--muted);margin-top:6px}
+  .borrow,.avoid{padding:14px 16px;border-radius:10px;margin:8px 0}
+  .borrow{background:#f0fdf4;border:1px solid #bbf7d0}
+  .avoid{background:#fef2f2;border:1px solid #fecaca}
+  .borrow b{color:var(--good)} .avoid b{color:var(--bad)}
+  .note{font-size:13.5px;color:var(--muted);font-style:italic}
+  /* wireframe boxes */
+  .wf{border:2px dashed #cbd5e1;border-radius:10px;background:#fff;padding:10px;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;color:#475569}
+  .wf .bar{background:#0f223a;color:#fff;border-radius:6px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:600}
+  .wf .row{display:flex;gap:8px;margin:6px 0}
+  .wf .box{background:#eef2f7;border:1px solid #d6deea;border-radius:6px;padding:14px 8px;text-align:center;flex:1}
+  .wf .box.dark{background:#0f223a;color:#fff;border-color:#0f223a}
+  .wf .box.accent{background:var(--brand-50);border-color:#bae6fd;color:#0369a1}
+  .wf .tall{padding:30px 8px}
+  .toc{columns:2;font-size:14px}
+  @media(max-width:720px){.toc{columns:1}}
+  .toc a{display:block;padding:3px 0}
+  .src{font-size:13px;word-break:break-word}
+  .src li{margin:5px 0}
+  .kbox{background:#0f223a;color:#e2e8f0;border-radius:12px;padding:18px 22px;margin:14px 0}
+  .kbox h4{color:#7dd3fc;margin-top:0}
+  .kbox ul{color:#cbd5e1}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .ratebadge{display:inline-block;background:#16a34a;color:#fff;font-weight:700;font-size:12px;padding:2px 9px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">FRONTEND DESIGN STRATEGY · PART 1 OF 3</span>
+  <h1>CompeteIQ — Web Research Report</h1>
+  <p>Five strong-design SaaS, AI, and competitive-intelligence products studied for frontend, dashboard, and conversion lessons — with cited, non-fabricated user sentiment from G2, Capterra, Product Hunt and design publications.</p>
+  <div class="meta">Prepared for: CompeteIQ (Next.js 15 · Tailwind · Supabase · Stripe · Claude) &nbsp;|&nbsp; Date: 3 June 2026 &nbsp;|&nbsp; Scope: research &amp; design direction only — no code changes.</div>
+</header>
+
+<div class="card">
+  <h3 style="margin-top:0">Contents</h3>
+  <div class="toc">
+    <a href="#summary">Executive summary</a>
+    <a href="#table">Comparison table</a>
+    <a href="#crayon">1. Crayon</a>
+    <a href="#klue">2. Klue</a>
+    <a href="#linear">3. Linear</a>
+    <a href="#similarweb">4. Similarweb</a>
+    <a href="#perplexity">5. Perplexity</a>
+    <a href="#takeaways">Key takeaways</a>
+    <a href="#means">What this means for CompeteIQ</a>
+    <a href="#sources">Sources</a>
+  </div>
+</div>
+
+<!-- ============ EXEC SUMMARY ============ -->
+<h2 id="summary">Executive summary</h2>
+<div class="card">
+<p class="lead">Across the five products, the design patterns that earn trust and conversions are remarkably consistent — and the complaints are too.</p>
+<p><b>What consistently wins:</b> real product screenshots above the fold (not abstract art), a single dominant call-to-action, fast time-to-first-value, clean typography with generous whitespace, and clear navigation that never overwhelms. Linear and Perplexity are repeatedly praised for restraint and clarity; Similarweb for a "clean, visual interface" that lets users "spot trends at a glance."</p>
+<p><b>What consistently fails:</b> information overload. The single most cited weakness across Crayon, Klue, and Similarweb is that powerful dashboards drown users in noise and tabs, producing a steep learning curve and, in Crayon's case, abandonment "within months when nobody owns the curation workflow." For a report tool like CompeteIQ this is the central design risk: a report must surface the few decisions that matter before the wall of detail.</p>
+<p><b>The strategic gap CompeteIQ can own:</b> the incumbents (Crayon, Klue, Similarweb) are enterprise, demo-gated, expensive ($20k–$100k/yr), and admin-heavy. CompeteIQ is the opposite — self-serve, transparent $79/mo pricing, one free report, useful in 60 seconds. The frontend should lean into that: <i>radically clear, fast, and self-explanatory</i>, with the polish of Linear/Perplexity but none of the enterprise heaviness.</p>
+</div>
+
+<!-- ============ COMPARISON TABLE ============ -->
+<h2 id="table">Comparison table</h2>
+<table>
+<thead><tr>
+  <th>Product</th><th>Category</th><th>Visual style</th><th>Rating (source)</th><th>Biggest design strength</th><th>Biggest friction</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td><b>Crayon</b></td>
+  <td>Competitor intelligence</td>
+  <td>Dense, data-rich enterprise UI</td>
+  <td><span class="ratebadge">4.6/5</span> G2 (1,000+)</td>
+  <td>Automated daily competitor feed + battlecards</td>
+  <td>Noise / information overload</td>
+</tr>
+<tr>
+  <td><b>Klue</b></td>
+  <td>Competitive enablement</td>
+  <td>Card-based intel feed + battlecards</td>
+  <td><span class="ratebadge">4.8/5</span> G2 (428)</td>
+  <td>Intuitive intel delivery for sales</td>
+  <td>Clunky curator UI, weak dashboards</td>
+</tr>
+<tr>
+  <td><b>Linear</b></td>
+  <td>B2B SaaS (project tooling)</td>
+  <td>Dark theme, Inter, micro-motion</td>
+  <td>Design-press acclaim</td>
+  <td>Restraint, real product visuals, crisp type</td>
+  <td>Aesthetic is widely cloned → can read "generic dark SaaS"</td>
+</tr>
+<tr>
+  <td><b>Similarweb</b></td>
+  <td>Market / web intelligence</td>
+  <td>Clean charts, light, multi-tab</td>
+  <td><span class="ratebadge">4.5/5</span> G2 (1,000+)</td>
+  <td>Visual trend comparison at a glance</td>
+  <td>Overwhelming tabs; steep learning curve</td>
+</tr>
+<tr>
+  <td><b>Perplexity</b></td>
+  <td>AI answer / report generation</td>
+  <td>Minimal, content-first, citations</td>
+  <td>4.x/5 G2 &amp; Product Hunt</td>
+  <td>Step-by-step progress UI; hoverable citations</td>
+  <td>Can feel shallow on hard queries; weaker mobile</td>
+</tr>
+</tbody>
+</table>
+<p class="note">Ratings are as reported by the cited review platforms at time of research (June 2026) and will drift over time. Review counts approximate.</p>
+
+<!-- ============ 1. CRAYON ============ -->
+<h2 id="crayon">1. Crayon <span class="pill ci">Competitor intelligence</span></h2>
+<div class="card">
+  <div class="grid2">
+    <div>
+      <div class="dim"><b>Business name</b>Crayon (Crayon Intel)</div>
+      <div class="dim"><b>Website</b><a href="https://www.crayon.co/">crayon.co</a></div>
+      <div class="dim"><b>What it offers</b>Automated competitive-intelligence platform for go-to-market teams: tracks 100+ data types across competitors (pricing pages, job posts, product updates, reviews, SEC filings, press releases), surfaces them in a feed, and powers battlecards for sales.</div>
+      <div class="dim"><b>Landing page structure</b>Enterprise SaaS pattern: hero with value prop + "Request a demo", logo wall of customers, feature blocks by persona (PMM/sales), social proof, resources. Demo-gated rather than self-serve.</div>
+      <div class="dim"><b>Dashboard / interface</b>Central "intelligence feed" of captured competitor changes, saved searches to narrow topics, and hybrid battlecards that update quickly. High information density.</div>
+      <div class="dim"><b>Visual style</b>Professional, data-dense enterprise tool; utilitarian over expressive.</div>
+      <div class="dim"><b>Colour palette</b>Brand-led (Crayon orange/neutral) with conventional SaaS neutrals; not the focus of reviews.</div>
+      <div class="dim"><b>Typography</b>Standard clean sans; readability prioritised for dense feeds.</div>
+      <div class="dim"><b>UI component patterns</b>Feed cards, saved-search filters, battlecard editors, automated email digests.</div>
+      <div class="dim"><b>Navigation style</b>Left-nav workspace; topic/competitor filtering.</div>
+    </div>
+    <div>
+      <div class="dim"><b>CTA strategy</b>"Request a demo" / "Get a demo" — sales-led, no self-serve trial.</div>
+      <div class="dim"><b>Headline style</b>Outcome-led GTM language (win more, beat competitors).</div>
+      <div class="dim"><b>Pricing page</b>No public pricing — quote-gated. Third-party estimates: ~$20k–$40k/yr starting, mid-market $25k–$70k, enterprise $100k+.</div>
+      <div class="dim"><b>Onboarding</b>Guided, sales-assisted; implementation ~1 month. Reviewers note it needs a dedicated CI admin to run well. <span class="note">(Self-serve onboarding not observable — gated.)</span></div>
+      <div class="dim"><b>What users like</b>"Awesome UI," intuitive setup, strong AI capabilities, automated daily scraping + email digests, and consistently praised customer support.</div>
+    </div>
+  </div>
+
+  <h4>Review quotes &amp; sentiment</h4>
+  <div class="quote">Reviewers praise an "awesome UI," an "intuitive" initial setup, and AI that is "AI-native with a user-oriented workflow."<span>Paraphrased from G2 review themes — see sources. Crayon ~4.6/5 on G2.</span></div>
+  <div class="quote">"The noise problem is Crayon's biggest weakness" — competitor news "repeatedly surfaces in the feed with no clear prioritisation," requiring "highly manual daily curation."<span>Reported friction theme across review aggregators — see sources.</span></div>
+
+  <h4>Complaints / friction</h4>
+  <ul>
+    <li><b>Information overload</b> — the dominant complaint; no clear prioritisation in the feed.</li>
+    <li><b>Needs a dedicated curator</b> — teams "abandoned the tool within months when nobody owns the curation workflow."</li>
+    <li><b>Integrations &amp; no mobile app</b> — limits usefulness for reps on the road.</li>
+    <li><b>Cost &amp; slow ROI</b> — expensive; ~14 months cited before meaningful ROI.</li>
+  </ul>
+
+  <div class="borrow"><b>Borrow:</b> automated scraping + a digest of "what changed" is the core value; battlecards prove that a structured, repeatable output format builds habit. CompeteIQ's "re-run monthly" feature maps directly to this.</div>
+  <div class="avoid"><b>Avoid:</b> a raw, unprioritised firehose. Every CompeteIQ report must lead with a ranked "what matters now" summary so a solo founder gets value without a curation team.</div>
+</div>
+
+<!-- ============ 2. KLUE ============ -->
+<h2 id="klue">2. Klue <span class="pill ci">Competitive enablement</span></h2>
+<div class="card">
+  <div class="grid2">
+    <div>
+      <div class="dim"><b>Business name</b>Klue</div>
+      <div class="dim"><b>Website</b><a href="https://klue.com/">klue.com</a></div>
+      <div class="dim"><b>What it offers</b>AI-powered competitive intelligence + win-loss on one platform; consolidates competitor intel and delivers battlecards to sales teams.</div>
+      <div class="dim"><b>Landing page structure</b>Bold positioning ("#1 Competitive Intelligence Software"), persona-led sections, customer proof, demo CTA. Polished, confident enterprise marketing site.</div>
+      <div class="dim"><b>Dashboard / interface</b>Curator-side intel boards + consumer-side battlecards. Card-based intel feed; analytics/reporting dashboards exist but are a noted weak spot.</div>
+      <div class="dim"><b>Visual style</b>Modern, friendly enterprise; cleaner and more approachable than typical CI tooling.</div>
+      <div class="dim"><b>Colour palette</b>Brand blues/neutrals; approachable, professional.</div>
+      <div class="dim"><b>Typography</b>Clean sans; readable card layouts.</div>
+      <div class="dim"><b>UI component patterns</b>Intel cards, battlecards, boards, analytics dashboard.</div>
+      <div class="dim"><b>Navigation style</b>Workspace nav separating curation from consumption.</div>
+    </div>
+    <div>
+      <div class="dim"><b>CTA strategy</b>"Get a demo" — sales-led.</div>
+      <div class="dim"><b>Headline style</b>Category-leadership claims + outcome language.</div>
+      <div class="dim"><b>Pricing page</b>No public pricing; demo-gated enterprise model.</div>
+      <div class="dim"><b>Onboarding</b>Reviewers report "difficult setup" and a learning curve for curators. <span class="note">(Full flow not observable — gated.)</span></div>
+      <div class="dim"><b>What users like</b>High 4.8/5 on G2 (428 reviews); praised for an "intuitive user interface" that "makes competitive intelligence accessible for sales teams."</div>
+    </div>
+  </div>
+
+  <h4>Review quotes &amp; sentiment</h4>
+  <div class="quote">Users praise "the intuitive user interface … making competitive intelligence accessible for sales teams." <span>G2 review theme — Klue ~4.8/5 (428 reviews).</span></div>
+  <div class="quote">"Users would love more flexibility within the analytics dashboard" — requests for "custom defaults" and "saved views to access insights faster." Curators find some "clunky functions and frustrating UI."<span>Reported G2 friction themes — see sources.</span></div>
+
+  <h4>Complaints / friction</h4>
+  <ul>
+    <li><b>Weak/limited dashboards</b> — "limited customization," some users "didn't use" the reporting dashboards much because they weren't easy to use.</li>
+    <li><b>Curator UX</b> — clunky for the people who maintain the intel.</li>
+    <li><b>Navigation clarity</b> — "lack of clarity in navigating features and functions."</li>
+  </ul>
+
+  <div class="borrow"><b>Borrow:</b> separating "consumption" (easy, beautiful) from "creation" (powerful) is smart. The thing users love is the <i>clean consumption surface</i> — CompeteIQ's report view is exactly this and should be its showpiece.</div>
+  <div class="avoid"><b>Avoid:</b> letting the analytics/dashboard side feel rigid. Give a couple of sensible saved views (recent reports, by competitor) rather than a configurable-but-confusing dashboard.</div>
+</div>
+
+<!-- ============ 3. LINEAR ============ -->
+<h2 id="linear">3. Linear <span class="pill design">B2B SaaS design exemplar</span></h2>
+<div class="card">
+  <div class="grid2">
+    <div>
+      <div class="dim"><b>Business name</b>Linear</div>
+      <div class="dim"><b>Website</b><a href="https://linear.app/">linear.app</a></div>
+      <div class="dim"><b>What it offers</b>Issue tracking / project management "system for product development." Included here as a frontend-design benchmark, not a competitor.</div>
+      <div class="dim"><b>Landing page structure</b>Bold one-line headline ("a better way to build products"), dark hero, real product screenshots, extensive-but-organised nav with helpful dropdowns, customer logo wall (Cash App + startups), feature sections with authentic UI.</div>
+      <div class="dim"><b>Dashboard / interface</b>Famous for speed and keyboard-first UX; the marketing site shows genuine dashboard previews as trust signals rather than mockups.</div>
+      <div class="dim"><b>Visual style</b>Sophisticated dark theme; subtle gradients, blurs, layered surfaces, micro-motion — but restrained.</div>
+      <div class="dim"><b>Colour palette</b>Pitch black base <code>#08090a</code>; charcoal/graphite depth; muted secondary text <code>#8a8f98</code>, tertiary <code>#62666d</code>; a single vivid accent (lime <code>#e4f222</code>) used selectively; desaturated-blue brand + gradient purple sphere logo.</div>
+      <div class="dim"><b>Typography</b>Inter (Inter Variable / Inter Display) with tightened letter-spacing (≈ −0.22px display, −0.11px body) — crisp and expressive at headings, readable at body.</div>
+    </div>
+    <div>
+      <div class="dim"><b>UI component patterns</b>Layered cards, subtle borders, restrained shadows, scroll-reactive 85%-opacity sticky header, gradient/blur accents.</div>
+      <div class="dim"><b>Navigation style</b>More links than most, but organised dropdowns prevent overwhelm.</div>
+      <div class="dim"><b>CTA strategy</b>Clear primary ("Get started") with a quiet secondary; one dominant action.</div>
+      <div class="dim"><b>Headline style</b>Short, confident, benefit-led; minimal hype.</div>
+      <div class="dim"><b>Pricing page</b>Public, tiered, clean — consistent with the restrained visual system. <span class="note">(Specifics not re-verified here.)</span></div>
+      <div class="dim"><b>Onboarding</b>Not reviewed here; product is celebrated for low-friction, fast UX.</div>
+      <div class="dim"><b>What users like</b>Design press repeatedly cites the "bold headline, sleek design, dark theme that makes content pop," "crisp typography," and the use of real product visuals as trust signals.</div>
+    </div>
+  </div>
+
+  <h4>Sentiment</h4>
+  <div class="quote">"Real product visuals outperform glossy concepts every time. Users need to see the actual interface as a trust signal" — and Linear is cited as following this best practice.<span>Design-publication analysis (SaaS Landing Page / Marketer Milk) — see sources.</span></div>
+  <p class="note">Direct end-user G2/Capterra review quotes were not the focus of available sources for Linear's <i>design</i>; the praise documented here comes from design publications and landing-page analyses, not verified individual customer reviews.</p>
+
+  <div class="borrow"><b>Borrow:</b> (1) real product screenshots above the fold; (2) one bold benefit headline; (3) a single restrained accent colour against a deep neutral; (4) Inter with tightened tracking for a premium feel cheaply.</div>
+  <div class="avoid"><b>Avoid:</b> over-cloning. The "dark + gradient + Inter" look is now so common it can read as generic. If CompeteIQ borrows the polish, it needs one distinctive signature (covered in Draft 3) to avoid blending in.</div>
+</div>
+
+<!-- ============ 4. SIMILARWEB ============ -->
+<h2 id="similarweb">4. Similarweb <span class="pill mi">Market / web intelligence</span></h2>
+<div class="card">
+  <div class="grid2">
+    <div>
+      <div class="dim"><b>Business name</b>Similarweb</div>
+      <div class="dim"><b>Website</b><a href="https://www.similarweb.com/">similarweb.com</a></div>
+      <div class="dim"><b>What it offers</b>Web traffic + market/competitive intelligence: traffic sources, competitor comparison, audience and industry analytics.</div>
+      <div class="dim"><b>Landing page structure</b>Data-led hero, "analyse any website" entry, persona/use-case sections, proof, tiered CTAs (free tools + sales for enterprise).</div>
+      <div class="dim"><b>Dashboard / interface</b>Chart-heavy dashboards; multi-tab analytics; quick site-vs-site comparison. Praised as "clean and visual."</div>
+      <div class="dim"><b>Visual style</b>Light, clean, chart-forward; lots of data viz.</div>
+      <div class="dim"><b>Colour palette</b>Light UI with brand accent + categorical chart colours for trend comparison.</div>
+      <div class="dim"><b>Typography</b>Clean sans optimised for dense numeric tables/charts.</div>
+      <div class="dim"><b>UI component patterns</b>KPI cards, comparison tables, trend charts, tabbed report sections, filters.</div>
+      <div class="dim"><b>Navigation style</b>Many tabs/modules — powerful but a noted source of overwhelm.</div>
+    </div>
+    <div>
+      <div class="dim"><b>CTA strategy</b>Freemium funnel: free lookup tools to pull users in, upsell to paid/enterprise.</div>
+      <div class="dim"><b>Headline style</b>Capability + data-authority language.</div>
+      <div class="dim"><b>Pricing page</b>Mixed: free tools + paid tiers, with premium gating of historical data; enterprise quote-based.</div>
+      <div class="dim"><b>Onboarding</b>Reviewers note a learning curve to master advanced dashboards. <span class="note">(Full flow not observed.)</span></div>
+      <div class="dim"><b>What users like</b>4.5/5 on G2 (1,000+). "Clean, visual interface … super easy to spot traffic trends and compare sites at once, saving tons of time." "Simple and beginner friendly."</div>
+    </div>
+  </div>
+
+  <h4>Review quotes &amp; sentiment</h4>
+  <div class="quote">"Clean, visual interface … super easy to spot traffic trends and compare sites at once, saving tons of time." "Beginner friendly … you don't need deep technical knowledge."<span>G2 review themes — Similarweb ~4.5/5 (1,000+).</span></div>
+  <div class="quote">"The interface may be a bit overwhelming at first because of all the tabs and options" — "a steep learning curve" to use advanced features.<span>G2 friction themes — see sources.</span></div>
+
+  <h4>Complaints / friction</h4>
+  <ul>
+    <li><b>Overwhelming tabs/options</b> — power vs. simplicity tension.</li>
+    <li><b>Learning curve</b> — significant ramp time for new team members.</li>
+    <li><b>Data accuracy &amp; paywalls</b> — approximate numbers for small/niche sites; historical data gated behind premium.</li>
+  </ul>
+
+  <div class="borrow"><b>Borrow:</b> the "compare at a glance" visual instinct — KPI cards + side-by-side comparison make competitive data instantly legible. A free entry-point tool (à la their free lookup) is a proven acquisition lever.</div>
+  <div class="avoid"><b>Avoid:</b> tab sprawl. CompeteIQ should resist becoming a multi-module analytics suite; keep the report as one scannable narrative with optional depth.</div>
+</div>
+
+<!-- ============ 5. PERPLEXITY ============ -->
+<h2 id="perplexity">5. Perplexity <span class="pill ai">AI report / answer generation</span></h2>
+<div class="card">
+  <div class="grid2">
+    <div>
+      <div class="dim"><b>Business name</b>Perplexity (Perplexity AI)</div>
+      <div class="dim"><b>Website</b><a href="https://www.perplexity.ai/">perplexity.ai</a></div>
+      <div class="dim"><b>What it offers</b>AI "answer engine" — concise, well-cited answers to natural-language queries, plus Pro Search for deeper, multi-step research.</div>
+      <div class="dim"><b>Landing page structure</b>Minimal, content-first: a single prominent input box is the hero (the product <i>is</i> the landing page). Low marketing clutter.</div>
+      <div class="dim"><b>Dashboard / interface</b>Conversational results with inline numbered citations, hoverable source snippets, follow-up suggestions, and an interactive step-by-step "plan being executed" progress UI for Pro Search.</div>
+      <div class="dim"><b>Visual style</b>Clean, modern, minimal; the content (answer + sources) is the UI.</div>
+      <div class="dim"><b>Colour palette</b>Restrained neutrals with a teal/petrol brand accent; calm, low-chrome.</div>
+      <div class="dim"><b>Typography</b>Readable, generously spaced; optimised for long-form answer legibility.</div>
+      <div class="dim"><b>UI component patterns</b>Answer block, citation chips, expandable step sections, follow-up chips, source cards.</div>
+      <div class="dim"><b>Navigation style</b>Minimal left rail; the query box dominates.</div>
+    </div>
+    <div>
+      <div class="dim"><b>CTA strategy</b>"Just type a question" — the input box <i>is</i> the CTA; zero-friction first value.</div>
+      <div class="dim"><b>Headline style</b>Minimal; lets the tool speak.</div>
+      <div class="dim"><b>Pricing page</b>Free tier + Pro subscription; simple and clear.</div>
+      <div class="dim"><b>Onboarding</b>Essentially none required — type and get value immediately; intermediate progress shown to keep users engaged during waits.</div>
+      <div class="dim"><b>What users like</b>"Concise, well-referenced answers instantly," follow-up suggestions that extend research, and the transparent step-by-step progress UI.</div>
+    </div>
+  </div>
+
+  <h4>Review quotes &amp; sentiment</h4>
+  <div class="quote">Users like "its ability to provide concise, well-referenced answers instantly, combining the speed of an AI assistant with the reliability of real web sources."<span>G2 review theme — see sources.</span></div>
+  <div class="quote">"Users were more willing to wait for results if the product displayed intermediate progress" — driving an "interactive UI that shows the plan being executed step-by-step."<span>LangChain "Breakout Agents" case study — see sources.</span></div>
+  <div class="quote">Dislikes: "can still be shallow or repetitive on harder questions, even when the answer looks polished," and "the mobile interface isn't as polished as the desktop version."<span>Reported user dislikes — see sources.</span></div>
+
+  <div class="borrow"><b>Borrow (highest-value lesson):</b> (1) inline citations + hoverable source snippets = instant trust for AI output — critical, since CompeteIQ reports are AI-generated from scraped sites; (2) a step-by-step progress UI during the ~60s report generation will dramatically reduce perceived wait and abandonment; (3) follow-up suggestions ("compare pricing," "track this competitor monthly") to deepen engagement.</div>
+  <div class="avoid"><b>Avoid:</b> polished-but-shallow output. Don't let beautiful formatting hide thin analysis; and don't neglect mobile — its weaker mobile experience is a named complaint.</div>
+</div>
+
+<!-- ============ KEY TAKEAWAYS ============ -->
+<h2 id="takeaways">Key takeaways</h2>
+<div class="kbox">
+  <h4>Seven cross-product design principles for CompeteIQ</h4>
+  <ul>
+    <li><b>Lead with the answer.</b> The #1 failure mode (Crayon, Klue, Similarweb) is overload. Every report opens with a ranked "what matters now," detail below.</li>
+    <li><b>Show real output above the fold.</b> Linear's most-cited strength. Put an actual report preview on the homepage, not abstract AI art.</li>
+    <li><b>Citations = trust for AI.</b> Perplexity proves inline sources make AI output credible. CompeteIQ must show where each claim came from (which scraped page).</li>
+    <li><b>Make the wait feel productive.</b> A step-by-step generation progress UI converts a 60s wait from anxiety into anticipation.</li>
+    <li><b>One dominant CTA, low friction.</b> "Generate your first report free" + "no credit card." Mirror Perplexity's zero-onboarding instinct.</li>
+    <li><b>Comparison at a glance.</b> Borrow Similarweb's KPI-card / side-by-side instinct for the report's competitor section.</li>
+    <li><b>Polish cheaply.</b> Inter with tightened tracking, generous whitespace, one restrained accent — premium feel without a design team.</li>
+  </ul>
+</div>
+
+<h3>Comparison: wireframe lessons in HTML boxes</h3>
+<p class="note">Two contrasting report-screen philosophies observed in the research:</p>
+<div class="grid2">
+  <div>
+    <p style="font-weight:600;margin-bottom:2px">❌ "Firehose" (Crayon/Similarweb friction)</p>
+    <div class="wf">
+      <div class="bar"><span>Dashboard</span><span>⚙ filters</span></div>
+      <div class="row"><div class="box">tab</div><div class="box">tab</div><div class="box">tab</div><div class="box">tab</div><div class="box">tab</div></div>
+      <div class="row"><div class="box tall">feed item</div><div class="box tall">feed item</div></div>
+      <div class="row"><div class="box tall">feed item</div><div class="box tall">feed item</div></div>
+      <div class="row"><div class="box">…endless unranked items…</div></div>
+    </div>
+  </div>
+  <div>
+    <p style="font-weight:600;margin-bottom:2px">✅ "Answer-first" (target for CompeteIQ)</p>
+    <div class="wf">
+      <div class="bar"><span>Report · Acme vs 3 rivals</span><span>↻ re-run</span></div>
+      <div class="row"><div class="box accent tall">TL;DR — top 3 gaps you can win</div></div>
+      <div class="row"><div class="box">Positioning</div><div class="box">Pricing</div><div class="box">Strengths</div></div>
+      <div class="row"><div class="box">Sources (cited) ↗</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ WHAT THIS MEANS ============ -->
+<h2 id="means">What this means for CompeteIQ</h2>
+<div class="card">
+<p><b>Positioning the frontend should communicate:</b> "Enterprise-grade competitor intelligence, without the enterprise. One free report, $79/mo, useful in 60 seconds." The whole incumbent set is gated, slow, and admin-heavy — CompeteIQ's design advantage is <i>self-serve clarity and speed</i>.</p>
+<p><b>Three concrete mandates carried into Part 2 (the design drafts):</b></p>
+<ul>
+  <li><b>The report view is the product.</b> Klue users love the consumption surface; Crayon users drown in the feed. CompeteIQ's report page — answer-first, cited, scannable — is the single most important screen and the homepage's hero proof.</li>
+  <li><b>Generation UX is a feature, not a spinner.</b> Borrow Perplexity's step-by-step progress during the ~60s wait; pair with strong empty and loading states (CompeteIQ already has trial/active states to design around).</li>
+  <li><b>Trust scaffolding everywhere.</b> "No credit card," "one free report," "secure billing via Stripe," real screenshot, and per-claim source citations — directly aligned with the existing AGENTS.md landing-page guidance to favour "practical proof over vague marketing language."</li>
+</ul>
+<p class="note">These map cleanly onto the existing stack (Next.js 15, Tailwind, lucide-react, sky-blue <code>brand</code> palette) and onto the routes already built: <code>/</code>, <code>/dashboard</code>, <code>/reports</code>, <code>/reports/[id]</code>, <code>/billing</code>.</p>
+</div>
+
+<!-- ============ SOURCES ============ -->
+<h2 id="sources">Sources</h2>
+<div class="card src">
+<p><b>Crayon</b></p>
+<ul>
+<li><a href="https://www.g2.com/products/crayon-crayon/reviews">G2 — Crayon reviews</a> · <a href="https://www.g2.com/products/crayon-crayon/reviews?qs=pros-and-cons">G2 — pros &amp; cons</a></li>
+<li><a href="https://www.capterra.com/p/176877/Crayon-Intel/reviews/">Capterra — Crayon Intel reviews</a></li>
+<li><a href="https://www.copy.ai/go-to-market-tools/crayon-review">Copy.ai — Crayon review</a> · <a href="https://prospeo.io/s/crayon-pricing-reviews-pros-and-cons">Prospeo — Crayon pricing/reviews</a> · <a href="https://www.vendr.com/marketplace/crayon">Vendr — Crayon pricing</a></li>
+</ul>
+<p><b>Klue</b></p>
+<ul>
+<li><a href="https://www.g2.com/products/klue/reviews">G2 — Klue reviews</a> · <a href="https://www.g2.com/products/klue/reviews?qs=pros-and-cons">G2 — pros &amp; cons</a></li>
+<li><a href="https://klue.com/">klue.com</a> · <a href="https://research.com/software/reviews/klue">Research.com — Klue review</a> · <a href="https://parano.ai/blog/klue-vs-crayon">Parano.ai — Klue vs Crayon</a></li>
+</ul>
+<p><b>Linear</b></p>
+<ul>
+<li><a href="https://linear.app/">linear.app</a> · <a href="https://linear.app/brand">Linear brand guidelines</a> · <a href="https://linear.app/now/how-we-redesigned-the-linear-ui">Linear — how we redesigned the UI</a></li>
+<li><a href="https://saaslandingpage.com/linear/">SaaS Landing Page — Linear</a> · <a href="https://www.marketermilk.com/blog/saas-landing-page">Marketer Milk — best SaaS landing pages</a> · <a href="https://fontofweb.com/tokens/linear.app">FontOfWeb — linear.app design tokens</a> · <a href="https://medium.com/design-bootcamp/the-rise-of-linear-style-design-origins-trends-and-techniques-4fd96aab7646">Bootcamp/Medium — the rise of Linear-style design</a></li>
+</ul>
+<p><b>Similarweb</b></p>
+<ul>
+<li><a href="https://www.g2.com/products/similarweb/reviews">G2 — Similarweb reviews</a> · <a href="https://www.g2.com/products/similarweb/reviews?qs=pros-and-cons">G2 — pros &amp; cons</a></li>
+<li><a href="https://www.capterra.com/p/148472/SimilarWeb-Pro/reviews/">Capterra — Similarweb reviews</a> · <a href="https://www.madx.digital/learn/similarweb-reviews">MADX — Similarweb review</a></li>
+</ul>
+<p><b>Perplexity</b></p>
+<ul>
+<li><a href="https://www.g2.com/products/perplexity/reviews">G2 — Perplexity reviews</a> · <a href="https://www.producthunt.com/products/perplexity-ai/reviews">Product Hunt — Perplexity reviews</a></li>
+<li><a href="https://www.langchain.com/breakoutagents/perplexity">LangChain — Perplexity Pro Search case study</a> · <a href="https://collabnix.com/perplexity-ai-review-2025-the-complete-guide-to-pros-cons-and-user-experience/">Collabnix — Perplexity review 2025</a> · <a href="https://techfoundernotes.com/en/perplexity-vs-google-conversational-ux/">Tech Founder Notes — Perplexity conversational UX</a></li>
+</ul>
+<p class="note">Where a specific dimension (e.g., onboarding flow, exact palette) could not be verified from available public sources, that is stated inline rather than guessed. Review ratings/counts reflect what cited platforms reported at research time (June 2026).</p>
+</div>
+
+<footer>
+  CompeteIQ Frontend Design Strategy — Part 1: Web Research Report. Research artifact; no production code changed. Continue to Part 2 (design drafts) and Part 3 (tooling) in the same <code>frontend-design</code> folder.
+</footer>
+
+</div>
+</body>
+</html>

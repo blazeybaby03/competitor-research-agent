@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CompeteIQ - Tooling &amp; Final Recommendation</title>
+<style>
+  :root{--bg:#f7f8fa;--ink:#0f172a;--muted:#5b6472;--line:#e4e8ee;--brand:#0284c7;--radius:14px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 22px 96px}
+  header.hero{background:linear-gradient(135deg,#0b3a5c,#0284c7 70%);color:#fff;border-radius:20px;padding:46px 40px;margin-bottom:30px}
+  header.hero .tag{display:inline-block;background:rgba(255,255,255,.16);padding:5px 13px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:16px}
+  header.hero h1{margin:0 0 10px;font-size:34px;font-weight:800;letter-spacing:-.02em}
+  header.hero p{margin:0;max-width:760px;font-size:17px;opacity:.92}
+  h2{font-size:25px;margin:42px 0 8px;letter-spacing:-.01em;border-bottom:2px solid var(--line);padding-bottom:8px}
+  h3{font-size:19px;margin:24px 0 6px}
+  h4{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin:18px 0 6px}
+  a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+  p{margin:8px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin:16px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:14px 0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#0f223a;color:#fff;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;position:sticky;top:0}
+  tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:#fafbfc}
+  .tname{font-weight:700;white-space:nowrap}
+  .pri{font-weight:700;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .now{background:#dcfce7;color:#166534}
+  .later{background:#dbeafe;color:#1e40af}
+  .post{background:#f1f5f9;color:#475569}
+  .avoid{background:#fef2f2;color:#991b1b}
+  .cplx{font-weight:600}
+  .lo{color:#16a34a}.med{color:#d97706}.hi{color:#dc2626}
+  .yes{color:#16a34a;font-weight:700}
+  .scroll{overflow-x:auto}
+  .rec{background:#0f223a;color:#e2e8f0;border-radius:16px;padding:26px 30px;margin:22px 0}
+  .rec h2,.rec h3{color:#fff;border:none}.rec b{color:#fff}.rec h4{color:#7dd3fc}.rec ul{color:#cbd5e1}
+  .rec table{color:#0f172a}
+  ol.plan{counter-reset:s;list-style:none;padding-left:0}
+  ol.plan li{position:relative;padding:10px 0 10px 44px;border-bottom:1px solid var(--line)}
+  ol.plan li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:10px;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+  ol.plan b{display:block}
+  .note{font-size:13px;color:var(--muted);font-style:italic}
+  .phase{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#0369a1}
+  .quote{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;white-space:pre-wrap;color:#334155}
+  footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  @media(max-width:760px){header.hero{padding:30px 22px}header.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <span class="tag">FRONTEND DESIGN STRATEGY - PART 3 OF 3</span>
+  <h1>Tooling Recommendations &amp; Final Launch Plan</h1>
+  <p>Practical guidance for implementing the selected frontend direction with Codex or Claude Code. The priority is public launch speed, revenue safety, and production stability, not a pre-launch design-system migration.</p>
+</header>
+
+<div class="card">
+  <h3 style="margin-top:0">Stack context</h3>
+  <p>CompeteIQ already runs on <b>Next.js 15.5 App Router, React 19, TypeScript, Tailwind CSS 3.4, lucide-react, Supabase, Stripe, ScraperAPI, and Anthropic Claude</b>. The current app already has useful global Tailwind component classes: <code>.btn-primary</code>, <code>.btn-secondary</code>, <code>.input</code>, <code>.card</code>, <code>.badge-trial</code>, and <code>.badge-active</code>.</p>
+  <p>The best launch move is to use that existing stack first. New UI tooling can wait until the product is public and the first conversion data shows where polish matters most.</p>
+</div>
+
+<h2>Tooling recommendations</h2>
+<div class="card scroll">
+<table>
+<thead><tr>
+  <th>Tool</th><th>What it does</th><th>Why it helps</th><th>Codex</th><th>Claude Code</th><th>Complexity</th><th>Priority</th><th>Risk / downside</th><th>Best use case</th>
+</tr></thead>
+<tbody>
+<tr>
+  <td class="tname">Existing Tailwind CSS</td>
+  <td>Current styling system and utility classes.</td>
+  <td>Fastest path to change visible UI without adding dependencies or changing production architecture.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>Requires discipline to keep class names readable.</td>
+  <td>Draft 1 launch UI.</td>
+</tr>
+<tr>
+  <td class="tname">Current brand tokens</td>
+  <td>Existing <code>brand</code> palette in <code>tailwind.config.ts</code>.</td>
+  <td>Preserves app identity and avoids a pre-launch re-theme. Draft 2 navy/amber can be introduced later.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>Less visually distinctive than a full brand system.</td>
+  <td>Landing, dashboard, report, billing polish.</td>
+</tr>
+<tr>
+  <td class="tname">Current component classes</td>
+  <td><code>.card</code>, <code>.btn-primary</code>, <code>.btn-secondary</code>, <code>.input</code>, badges.</td>
+  <td>Lets implementation stay focused on content hierarchy and states instead of component plumbing.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>Not as flexible as a mature component library.</td>
+  <td>Public launch UI refresh.</td>
+</tr>
+<tr>
+  <td class="tname">lucide-react</td>
+  <td>Icon set already installed and used.</td>
+  <td>Keeps icon language consistent; no second icon library needed.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>None significant.</td>
+  <td>Feature cards, buttons, empty states, report actions.</td>
+</tr>
+<tr>
+  <td class="tname">next/font Inter</td>
+  <td>Next-native self-hosted font optimization already wired in <code>app/layout.tsx</code>.</td>
+  <td>Good typography without external requests, layout shift, or a new dependency.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>None.</td>
+  <td>All launch surfaces.</td>
+</tr>
+<tr>
+  <td class="tname">Next loading states</td>
+  <td>Route/component loading UI, skeletons, and clear pending states.</td>
+  <td>Turns the ~60 second report generation wait into an understandable process.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>Do not fake progress beyond what the app can support.</td>
+  <td>Generate report button, report detail pending state.</td>
+</tr>
+<tr>
+  <td class="tname">Existing test scripts</td>
+  <td><code>npm run typecheck</code>, <code>npm run lint</code>, <code>npm run test</code>, <code>npm run build</code>, <code>npm run verify</code>.</td>
+  <td>Matches the launch definition of done and catches regressions without new tooling.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx lo">Low</td>
+  <td><span class="pri now">Use now</span></td>
+  <td>Does not replace manual visual review.</td>
+  <td>Every production-code implementation pass.</td>
+</tr>
+<tr>
+  <td class="tname">Playwright</td>
+  <td>E2E browser testing, already listed in the repo.</td>
+  <td>Useful for launch-critical visual smoke checks if production UI changes are made.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri later">Use if needed</span></td>
+  <td>Can add maintenance overhead. Snapshot diffs may be noisy on Windows/CI differences.</td>
+  <td>Landing/dashboard/report/billing smoke screenshots.</td>
+</tr>
+<tr>
+  <td class="tname">shadcn/ui + Radix</td>
+  <td>Copy-in component primitives and accessible UI behavior.</td>
+  <td>Good future base for Draft 2 tabs, dialogs, tooltips, and tables.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Pre-launch migration risk; vendored components require maintenance.</td>
+  <td>Draft 2 component-system upgrade.</td>
+</tr>
+<tr>
+  <td class="tname">react-hook-form + Zod</td>
+  <td>Client form state and schema validation.</td>
+  <td>Useful after launch for richer inline validation on competitor URLs and business details.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Must not weaken server-side URL validation in <code>lib/validateUrl.ts</code>.</td>
+  <td>BusinessForm polish after launch.</td>
+</tr>
+<tr>
+  <td class="tname">Recharts or Tremor</td>
+  <td>Charts and KPI visualization.</td>
+  <td>Can support Draft 2 comparison cards or Draft 3 score views once data supports them.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Bundle weight and visual complexity. Skip until charts are genuinely useful.</td>
+  <td>KPI cards, comparisons, score visualization.</td>
+</tr>
+<tr>
+  <td class="tname">Framer Motion</td>
+  <td>Animation and micro-interactions.</td>
+  <td>Can improve Draft 3's radar/progress feel after the core funnel works.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Heavy motion can harm performance and accessibility. Must respect reduced motion.</td>
+  <td>Post-launch loading polish and Radar concept.</td>
+</tr>
+<tr>
+  <td class="tname">Storybook</td>
+  <td>Component workshop and state documentation.</td>
+  <td>Useful once the UI system is larger and repeated states need documentation.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx hi">High</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Too much setup and maintenance for the current launch window.</td>
+  <td>Scaling a design system later.</td>
+</tr>
+<tr>
+  <td class="tname">Chromatic</td>
+  <td>Hosted visual regression for Storybook.</td>
+  <td>Useful only after Storybook and a mature component library exist.</td>
+  <td class="yes">Yes*</td><td class="yes">Yes*</td>
+  <td class="cplx hi">High</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Paid SaaS and account setup. Not needed for a solo pre-launch sprint.</td>
+  <td>Later UI regression workflow.</td>
+</tr>
+<tr>
+  <td class="tname">v0 / Figma-to-code</td>
+  <td>AI or design-exported UI scaffolding.</td>
+  <td>Can speed future concept exploration, but output still needs cleanup.</td>
+  <td class="yes">Yes*</td><td class="yes">Yes*</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Can introduce inconsistent patterns and inaccessible markup if copied blindly.</td>
+  <td>Draft 2/3 prototyping after launch.</td>
+</tr>
+<tr>
+  <td class="tname">Lighthouse CI gate</td>
+  <td>Automated performance/accessibility checks in CI.</td>
+  <td>Valuable once the launch surface stabilizes and deployment workflow is settled.</td>
+  <td class="yes">Yes</td><td class="yes">Yes</td>
+  <td class="cplx med">Medium</td>
+  <td><span class="pri post">Post-launch</span></td>
+  <td>Pipeline setup can distract from launch. Run Lighthouse manually first if needed.</td>
+  <td>Post-launch performance budget.</td>
+</tr>
+</tbody>
+</table>
+<p class="note"><b>Priority legend:</b> Use now = launch-safe and already available; Use if needed = useful only if production UI is changed; Post-launch = defer until the public funnel is working.</p>
+</div>
+
+<div class="card">
+  <h3>Deliberately not recommended before launch</h3>
+  <p>Do not add a second component framework, another icon library, global state management, CSS-in-JS, heavy animation, or 3D/WebGL hero effects. None of those moves helps the Friday launch path, and each adds maintenance or verification surface. The current product needs clearer proof, report hierarchy, and trust copy more than a new frontend stack.</p>
+</div>
+
+<!-- ============ FINAL RECOMMENDATION ============ -->
+<div class="rec">
+  <h2>Final recommendation</h2>
+
+  <h4>Which design should I choose if I want the fastest public launch?</h4>
+  <p><b>Draft 1 - Clear Signal.</b> It uses the current Tailwind tokens, global component classes, lucide icons, current navigation, and existing route structure. It improves the public experience without touching backend logic, Stripe, Supabase, URL validation, or report generation.</p>
+
+  <h4>Which design should I choose if I want the highest perceived value?</h4>
+  <p><b>Draft 2 - Briefing Room.</b> It makes the report feel like a paid briefing rather than a generic AI output. The "anatomy of a report", executive-summary-first layout, opportunity cards, source trust, and pricing value framing best support the $79/mo subscription.</p>
+
+  <h4>Which design should I choose if I want the strongest long-term SaaS brand?</h4>
+  <p><b>Draft 2 - Briefing Room.</b> It is credible, scalable, and not dependent on gimmicks. Keep Draft 3 - Radar as a post-launch differentiator once there is enough product usage to justify gap scores, watchlists, and more distinctive interaction patterns.</p>
+
+  <h4>Which tools should be used immediately?</h4>
+  <ul>
+    <li>Existing Tailwind CSS, current brand tokens, current global component classes, lucide-react, existing <code>next/font</code> Inter setup, existing loading/error UI patterns, and the current verification commands.</li>
+    <li>Use Playwright only if production UI changes need a browser smoke check or visual screenshots.</li>
+  </ul>
+
+  <h4>Which tools should be left for post-launch?</h4>
+  <ul>
+    <li>shadcn/ui, broader Radix primitives, react-hook-form + Zod migration, Recharts/Tremor, Framer Motion, Storybook, Chromatic, v0/Figma-to-code, and Lighthouse CI pipeline gates.</li>
+  </ul>
+
+  <h4>The recommended play</h4>
+  <p style="color:#cbd5e1"><b>Ship Draft 1 now, aim the product toward Draft 2.</b> The immediate implementation should refine the landing page, report hierarchy, loading states, empty states, and billing trust copy using the existing stack. After launch, upgrade the report surface into the more premium Briefing Room direction. Test Radar only after the core funnel has paying users.</p>
+</div>
+
+<!-- ============ IMPLEMENTATION PLAN ============ -->
+<h2 id="plan">Suggested implementation plan for Codex / Claude Code</h2>
+<div class="card">
+  <p class="phase">Phase 0 - Scope lock</p>
+  <ol class="plan">
+    <li><b>Confirm the launch-safe boundary</b>Only touch frontend presentation files and shared UI components needed for Draft 1. Do not change Stripe checkout/webhook logic, Supabase auth/RLS behavior, trial-credit logic, URL validation, scraping, or AI report generation.</li>
+    <li><b>Inventory current UI files</b>Read <code>app/page.tsx</code>, dashboard pages, <code>components/BusinessForm.tsx</code>, <code>components/GenerateReportButton.tsx</code>, <code>components/ReportView.tsx</code>, <code>components/DashboardNav.tsx</code>, <code>app/globals.css</code>, and <code>tailwind.config.ts</code>.</li>
+    <li><b>Preserve existing behavior</b>Make styling/content/hierarchy changes only. Any form or API behavior change must be justified as a launch blocker before implementation.</li>
+  </ol>
+
+  <p class="phase">Phase 1 - Draft 1 launch UI</p>
+  <ol class="plan">
+    <li><b>Landing page</b>Refine <code>app/page.tsx</code> around one CTA: "Generate your first report free." Add a real-looking report preview above the fold, trust strip, clearer 3-step flow, and practical proof copy.</li>
+    <li><b>Report view</b>Improve <code>components/ReportView.tsx</code> so completed reports open with executive summary, market gaps, and recommended actions before deeper analysis. Keep copy-report behavior intact.</li>
+    <li><b>Generation state</b>Improve <code>components/GenerateReportButton.tsx</code> and generating report state copy with a clear step-based wait message: scraping, reading, analysing, writing. Do not fake live backend progress.</li>
+    <li><b>Dashboard states</b>Polish empty and ready states in dashboard/reports pages: no reports, no competitors, trial used, Pro active, failed/generating/completed statuses.</li>
+    <li><b>Billing trust</b>Polish billing copy around one Pro plan, secure Stripe billing, unlimited reports, and support contact. Keep server-side price handling untouched.</li>
+  </ol>
+
+  <p class="phase">Phase 2 - Verification</p>
+  <ol class="plan">
+    <li><b>Run automated checks</b>Run <code>npm run typecheck</code>, <code>npm run lint</code>, <code>npm run test</code>, <code>npm run build</code>, or simply <code>npm run verify</code> if time allows.</li>
+    <li><b>Manual visual check</b>Open the app locally and inspect landing, signup/login entry points, dashboard, reports list, report detail, billing, and mobile widths.</li>
+    <li><b>Report risks clearly</b>If credentials or local services block runtime testing, document the exact blocker and list the manual Supabase/Stripe/Vercel checks required.</li>
+  </ol>
+
+  <p class="phase">Phase 3 - Post-launch upgrade path</p>
+  <ol class="plan">
+    <li><b>Move toward Briefing Room</b>After launch, improve the report page with source chips, section navigation, opportunity cards, and a stronger sample-report landing showcase.</li>
+    <li><b>Add tooling only when justified</b>Introduce shadcn/Radix for specific components, not as a full rewrite. Add Zod/forms, charts, or motion only when a customer-facing workflow needs them.</li>
+    <li><b>Experiment with Radar</b>Prototype gap score, watchlist, and command input as a measured post-launch feature, not part of the first public release.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3>Copy/paste implementation prompt for Claude Code or Codex</h3>
+  <div class="quote">Implement Draft 1 - Clear Signal for CompeteIQ as a launch-safe frontend polish pass.
+
+Read first: AGENTS.md, frontend-design/01-research-report.html, frontend-design/02-design-drafts.html, frontend-design/03-tooling-and-recommendation.html, package.json, app/globals.css, tailwind.config.ts, app/page.tsx, app/(dashboard) pages, components/BusinessForm.tsx, components/GenerateReportButton.tsx, components/ReportView.tsx, components/DashboardNav.tsx.
+
+Deploy subagents simultaneously for review before editing:
+1. Landing/conversion subagent: inspect app/page.tsx and recommend the smallest changes for report preview, trust strip, no-credit-card copy, and one primary CTA.
+2. Product-flow subagent: inspect dashboard/reports/report detail/billing and recommend hierarchy, empty/loading/error state improvements.
+3. Launch-safety subagent: confirm the proposed UI edits do not touch Stripe webhook/checkout validation, Supabase RLS/auth protections, URL validation, trial-credit handling, scraping, or AI generation behavior.
+
+Then implement only the agreed frontend presentation changes using the existing Tailwind classes, existing brand tokens, lucide-react, and current component patterns. Do not install shadcn/ui, Radix, Zod, charting, motion, Storybook, or other new dependencies before launch. Preserve product behavior.
+
+After edits, run npm run verify. If credentials/local services block anything, document the exact blocker and the manual verification needed.</div>
+</div>
+
+<div class="card">
+  <h3>Guardrails carried from AGENTS.md</h3>
+  <p>No backend logic, RLS policy, Stripe validation, webhook verification, URL/SSRF protection, scraping behavior, AI report generation, or trial-credit control should be changed by this design implementation. Every code PR should explain what changed, why it matters for launch, how it was verified, and what manual Stripe/Supabase/Vercel checks remain.</p>
+</div>
+
+<footer>
+  CompeteIQ Frontend Design Strategy - Part 3: Tooling &amp; Final Recommendation. Research/design artifact only; no production code changed. See Parts 1 and 2 in the same <code>frontend-design</code> folder.
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "id": "review-renderer-materialized",
+  "action": "write_moodboard_widget_payload",
+  "label": "Materialized Creative Production image review",
+  "createdAt": "2026-06-12T09:19:07.406384Z",
+  "timestamp": "2026-06-12T09:19:07.406384Z",
+  "title": "Digital Product Core Ad Review",
+  "summary": "Review, select, and hand off generated Creative Production images.",
+  "itemCount": 12,
+  "runDirectory": "C:\\Users\\emaja\\Claude\\Competitor Research Agent\\outputs\\imagegen\\competeiq-digital-product-ads",
+  "streamPath": "C:\\Users\\emaja\\Claude\\Competitor Research Agent\\outputs\\imagegen\\competeiq-digital-product-ads\\data\\stream.json",
+  "runStatePath": "C:\\Users\\emaja\\Claude\\Competitor Research Agent\\outputs\\imagegen\\competeiq-digital-product-ads\\run-state.json",
+  "latestActionPath": "C:\\Users\\emaja\\Claude\\Competitor Research Agent\\outputs\\imagegen\\competeiq-digital-product-ads\\latest-action.json"
+}
