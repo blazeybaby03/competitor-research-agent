@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { CheckCircle, BarChart3, Zap, Target, TrendingUp, Shield, Users } from "lucide-react";
+import MarketingFooter from "@/components/MarketingFooter";
+import MarketingNav from "@/components/MarketingNav";
+import { SampleReportPreview } from "@/components/SampleReport";
+import { sampleReports } from "@/lib/sampleReports";
 
 const useCases = [
   {
@@ -25,25 +29,11 @@ const useCases = [
 ];
 
 export default function LandingPage() {
+  const featuredSample = sampleReports[0];
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="border-b border-gray-100">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
-          <span className="text-xl font-bold text-brand-600">CompeteIQ</span>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
-            >
-              Log in
-            </Link>
-            <Link href="/signup" className="btn-primary text-sm">
-              Get started free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-14 pb-10 sm:pt-20 sm:pb-12 text-center">
@@ -116,136 +106,14 @@ export default function LandingPage() {
             What you get
           </h2>
           <p className="text-center text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">
-            A real report — not a dashboard, not a summary, not a chart
+            A source-labelled example report, not a generic mockup
           </p>
           <p className="text-center text-sm text-gray-500 mb-6 sm:mb-10">
-            Seven structured sections, every time. Here&apos;s a sample.
+            This public sample uses known companies for illustration only and shows the sources behind the analysis.
           </p>
-          <div className="card overflow-hidden border-brand-200 shadow-md">
-            {/* Report header bar */}
-            <div className="bg-brand-600 px-6 py-3 flex items-center justify-between">
-              <span className="text-white font-semibold text-sm">
-                Competitor Intelligence Report: Acme Analytics
-              </span>
-              <span className="text-brand-200 text-xs">Generated just now</span>
-            </div>
-            <div className="p-6 space-y-6">
-              {/* Executive Summary */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">
-                  Executive Summary
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  The three competitors analysed (Rival A, Rival B, Rival C) all
-                  compete on feature depth and brand awareness, but none of them
-                  offer transparent pricing or self-serve onboarding. Their
-                  messaging targets enterprise buyers, leaving a clear opening
-                  for a product that serves small teams quickly and affordably.
-                </p>
-              </div>
-              {/* Market Gaps */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                  Market Gaps
-                </p>
-                <ul className="space-y-2">
-                  {[
-                    "No competitor publishes self-serve pricing — a transparent tier would reduce friction for budget-conscious buyers.",
-                    "All three require sales calls for onboarding. A guided setup under 10 minutes is an unmet expectation.",
-                    "None address the solo-operator segment in their messaging, despite it being a fast-growing buyer category.",
-                  ].map((gap, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 text-xs font-bold mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span className="text-sm text-gray-700">{gap}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {/* Recommended Actions */}
-              <div className="rounded-lg bg-brand-50 border border-brand-100 p-4">
-                <p className="text-xs font-semibold uppercase tracking-widest text-brand-700 mb-3">
-                  Recommended Actions
-                </p>
-                <ul className="space-y-2">
-                  {[
-                    "Publish a clear pricing page with a free-to-start tier before your next marketing push.",
-                    "Build a 5-minute self-serve onboarding flow and lead with it in paid ads.",
-                    "Add a 'Built for small teams' positioning statement across your homepage and LinkedIn.",
-                  ].map((action, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white text-xs font-bold mt-0.5">
-                        {i + 1}
-                      </span>
-                      <span className="text-sm font-medium text-gray-800">
-                        {action}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {/* Competitor Summaries */}
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                  Competitor Summaries
-                </p>
-                <div className="space-y-2">
-                  {[
-                    {
-                      name: "Rival A",
-                      url: "rival-a.com",
-                      summary:
-                        "Enterprise analytics platform. Requires a sales demo for pricing. Strong brand presence but onboarding takes 2–4 weeks — a friction point for small teams.",
-                    },
-                    {
-                      name: "Rival B",
-                      url: "rival-b.com",
-                      summary:
-                        "Self-serve dashboard targeting marketing managers. Free tier available but report depth is limited. Pricing jumps sharply at scale.",
-                    },
-                  ].map((c, i) => (
-                    <div
-                      key={i}
-                      className="rounded-lg border border-gray-100 bg-gray-50 p-3"
-                    >
-                      <p className="text-xs font-semibold text-gray-800 mb-1">
-                        {c.name}{" "}
-                        <span className="font-normal text-gray-400">
-                          — {c.url}
-                        </span>
-                      </p>
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        {c.summary}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* Remaining sections teaser */}
-              <div className="border-t border-gray-100 pt-3">
-                <p className="text-xs font-medium text-gray-400 mb-2">
-                  Also in your report:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "Positioning Analysis",
-                    "Pricing & Offer Analysis",
-                    "Strengths & Weaknesses",
-                  ].map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-500"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          <SampleReportPreview report={featuredSample} />
           <p className="text-center text-xs text-gray-400 mt-4">
-            Example output. Your report is generated from the competitor websites you provide — based on their live public content, not generic AI training data.
+            Your private report is generated from the competitor websites you provide, based on the public content that can be read at generation time.
           </p>
         </div>
       </section>
@@ -517,23 +385,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-8">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-sm font-bold text-brand-600">CompeteIQ</span>
-          <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500">
-            <Link href="/legal/terms" className="hover:text-gray-900">Terms</Link>
-            <Link href="/legal/privacy" className="hover:text-gray-900">Privacy</Link>
-            <Link href="/legal/cookies" className="hover:text-gray-900">Cookies</Link>
-            <Link href="/legal/refunds" className="hover:text-gray-900">Refunds</Link>
-            <Link href="/legal/acceptable-use" className="hover:text-gray-900">Acceptable Use</Link>
-            <Link href="/legal/disclaimer" className="hover:text-gray-900">Disclaimer</Link>
-          </nav>
-          <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} CompeteIQ. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
