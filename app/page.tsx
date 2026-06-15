@@ -519,8 +519,16 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-100 py-8">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-sm font-bold text-brand-600">CompeteIQ</span>
+          <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500">
+            <Link href="/legal/terms" className="hover:text-gray-900">Terms</Link>
+            <Link href="/legal/privacy" className="hover:text-gray-900">Privacy</Link>
+            <Link href="/legal/cookies" className="hover:text-gray-900">Cookies</Link>
+            <Link href="/legal/refunds" className="hover:text-gray-900">Refunds</Link>
+            <Link href="/legal/acceptable-use" className="hover:text-gray-900">Acceptable Use</Link>
+            <Link href="/legal/disclaimer" className="hover:text-gray-900">Disclaimer</Link>
+          </nav>
           <p className="text-xs text-gray-400">
             © {new Date().getFullYear()} CompeteIQ. All rights reserved.
           </p>
