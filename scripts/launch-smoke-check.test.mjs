@@ -91,7 +91,7 @@ test("public and auth pages keep launch-critical render paths", () => {
   assert.match(home, /href="\/signup"/, "homepage should link to signup");
 
   assert.match(login, /signInWithPassword/, "login page should submit through Supabase password auth");
-  assert.match(login, /router\.push\("\/dashboard"\)/, "login success should route to dashboard");
+  assert.match(login, /router\.push\(\s*next && next\.startsWith\("\/"\) \? next : "\/dashboard"\s*\)/, "login success should resume a safe local next path or default to dashboard");
   assert.match(login, /href="\/signup"/, "login page should link to signup");
   assert.match(login, /auth_failed/, "login page should show failed auth callback errors");
 
@@ -146,7 +146,7 @@ test("dashboard, reports, billing, and upgrade prompt render expected flow state
   assert.match(billing, /STRIPE_STARTER_PRICE_ID/, "billing page should support the configured Starter price ID");
   assert.match(billing, /STRIPE_GROWTH_PRICE_ID/, "billing page should use the configured Pro price ID");
   assert.match(billing, /CheckoutButton/, "billing page should render checkout for non-active users");
-  assert.match(billing, /currentPlan\.name/, "billing page should render the active plan state");
+  assert.match(billing, /activePlan\.name/, "billing page should render the active plan state");
   assert.match(upgradePrompt, /used your free report/i, "upgrade prompt should explain the trial limit state");
   assert.match(upgradePrompt, /href="\/billing"/, "upgrade prompt should route users to billing");
 });
@@ -154,7 +154,9 @@ test("dashboard, reports, billing, and upgrade prompt render expected flow state
 test("business save route keeps validation, ownership, and atomic competitor replacement", () => {
   const route = read("app/api/business/save/route.ts");
   const validationIndex = route.indexOf("validateCompetitorUrls(nonEmpty)");
-  const insertIndex = route.indexOf(".from(\"businesses\")\n        .insert");
+  // Match the insert regardless of line endings / indentation (avoids CRLF brittleness).
+  const insertMatch = route.match(/\.from\("businesses"\)\s*\.insert/);
+  const insertIndex = insertMatch ? insertMatch.index : -1;
 
   assert.match(route, /supabase\.auth\.getUser\(\)/, "business save should require a Supabase user");
   assert.match(route, /Unauthorized/, "business save should reject logged-out users");
