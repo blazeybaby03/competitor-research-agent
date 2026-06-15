@@ -17,6 +17,7 @@
     "@stripe/stripe-js": "^4.0.0",
     "@supabase/ssr": "^0.5.0",
     "@supabase/supabase-js": "^2.45.0",
+    "@vercel/toolbar": "^0.2.6",
     "cheerio": "^1.0.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.460.0",
