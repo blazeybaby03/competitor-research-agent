@@ -21,11 +21,11 @@ export default function UseCasesIndexPage() {
               Use cases
             </p>
             <h1 className="max-w-3xl text-3xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-              Show visitors how CompeteIQ works in real markets.
+              How CompeteIQ works in real markets.
             </h1>
             <p className="mt-5 max-w-3xl text-base leading-relaxed text-gray-600 sm:text-lg">
-              Each use case explains the buyer decision, the public sources CompeteIQ can read,
-              and the kind of actions a report can produce.
+              Each use case shows you which public signals CompeteIQ analyses,
+              which decisions the report supports, and who gets the most value from it.
             </p>
           </div>
         </section>

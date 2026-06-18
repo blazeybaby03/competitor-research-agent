@@ -13,7 +13,7 @@ This page lists the third-party service providers ("sub-processors") that Compet
 
 | Provider | Purpose | Data processed | Primary region |
 |---|---|---|---|
-| **Supabase** | Authentication and database hosting | Account email, name, business info, competitor URLs, reports, billing references | Configured project region (verify) |
+| **Supabase** | Authentication and database hosting | Account email, name, business info, competitor URLs, reports, billing references | ap-southeast-2 (Sydney, Australia) |
 | **Stripe** | Payment processing and subscription billing | Name, email, billing/payment details, subscription status | United States / global |
 | **Vercel** | Application hosting and content delivery | Technical/log data, IP address, requests | United States / global edge |
 | **Anthropic** | AI model that generates report content | Business and competitor inputs submitted for report generation | United States |

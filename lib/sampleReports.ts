@@ -92,7 +92,7 @@ export const sampleReports: SampleReport[] = [
   {
     slug: "ecommerce-allbirds",
     industry: "E-commerce",
-    title: "E-commerce Sample Report: Sustainable Footwear Market",
+    title: "E-commerce Sample Report: Allbirds",
     targetCompany: "Allbirds",
     targetUrl: "https://www.allbirds.com/",
     generatedDate: "15 June 2026",
