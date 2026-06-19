@@ -21,13 +21,22 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = getSafeRedirectPath(searchParams.get("next"));
 
+  // Behind Vercel's load balancer the request host can be the internal
+  // forwarding host, so `origin` from request.url points at the wrong URL.
+  // Honour x-forwarded-host in production so confirmation links resolve to the
+  // real public domain. (Canonical Supabase SSR pattern.)
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const isLocalEnv = process.env.NODE_ENV === "development";
+  const redirectBase =
+    !isLocalEnv && forwardedHost ? `https://${forwardedHost}` : origin;
+
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(new URL(next, origin));
+      return NextResponse.redirect(new URL(next, redirectBase));
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`);
+  return NextResponse.redirect(new URL("/login?error=auth_failed", redirectBase));
 }

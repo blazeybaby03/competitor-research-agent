@@ -106,7 +106,8 @@ test("auth callback exchanges codes and only redirects to local app paths", () =
   assert.match(callback, /exchangeCodeForSession\(code\)/, "auth callback should exchange Supabase codes server-side");
   assert.match(callback, /getSafeRedirectPath/, "auth callback should sanitize the next path");
   assert.match(callback, /rawNext\.startsWith\("\/\/"\)/, "auth callback should reject protocol-relative redirects");
-  assert.match(callback, /new URL\(next, origin\)/, "auth callback should resolve redirects against the current origin");
+  assert.match(callback, /new URL\(next, redirectBase\)/, "auth callback should resolve redirects against a trusted base URL");
+  assert.match(callback, /x-forwarded-host/, "auth callback should honour the forwarded host behind the Vercel load balancer");
   assert.doesNotMatch(callback, /redirect\(`\$\{origin\}\$\{next\}`\)/, "auth callback should not concatenate raw next values into redirect URLs");
   assert.match(callback, /login\?error=auth_failed/, "auth callback should return users to login on failed confirmation");
 });
