@@ -1,19 +1,19 @@
-# AGENTS.md — CompeteIQ Launch Instructions
+# AGENTS.md — CompeteIQ Development Guide
 
 ## Mission
 
-Prepare this Next.js SaaS app for a Friday morning launch. Prioritise revenue safety, customer trust, and production stability over new features.
+Maintain and grow a live Next.js SaaS at competeiq.pro. Prioritise revenue safety, customer trust, and production stability. The app is deployed on Railway and serving real users.
 
-This repository is a Next.js 15 App Router project using TypeScript, Tailwind CSS, Supabase auth/database, Stripe subscriptions, ScraperAPI, and Anthropic Claude report generation.
+This repository is a Next.js 16 App Router project using TypeScript, Tailwind CSS, Supabase auth/database, Stripe subscriptions, ScraperAPI, Anthropic Claude report generation, and Resend for transactional email.
 
-## Launch constraints
+## Development principles
 
-- Do not introduce large new features before launch.
 - Do not rewrite the architecture unless a blocking issue requires it.
 - Do not weaken Supabase RLS, Stripe validation, URL validation, webhook verification, or trial-credit controls.
 - Prefer small, reviewable commits.
-- Preserve the current product promise: signup, add competitors, generate one free report, upgrade to Pro for 100 reports per 30 days.
-- Treat Stripe checkout, webhook handling, report generation, and auth redirects as launch-critical.
+- New features must build, lint, and typecheck cleanly before deployment.
+- The product has two entry points: guest report (no signup) and authenticated account. Keep both working.
+- Treat Stripe checkout, webhook handling, report generation, auth redirects, and the guest report flow as production-critical.
 
 ## Required checks before marking work complete
 
@@ -69,11 +69,21 @@ If a command cannot be run because credentials or local services are missing, do
 - Ensure report generation handles partial scrape failures gracefully.
 - Do not store completed reports with empty or malformed AI output.
 
+## Resend and email rules
+
+- All transactional email goes through Resend via `lib/email.ts` using `accounts@mail.competeiq.pro`.
+- The guest report drip sequence schedules 5 emails via Resend's `scheduledAt` API at report generation time.
+- Do not log email addresses in server output beyond what is needed for debugging.
+- `RESEND_API_KEY` is required in production; `lib/email.ts` throws on startup if unset.
+
 ## Testing focus
 
 Add or improve tests around these paths first:
 
 - Unauthenticated users cannot access `/dashboard` or `/reports`.
+- `/guest-report/[token]` is accessible without auth; expired tokens return 404.
+- Guest report API (`/api/reports/generate-guest`) rejects duplicate email within 24 hours.
+- Guest report API rejects more than 3 requests per IP per hour.
 - Business save rejects invalid competitor URLs.
 - Report generation rejects missing business IDs and missing competitors.
 - Trial users can generate only one free report.

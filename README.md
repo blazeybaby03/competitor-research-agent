@@ -4,12 +4,13 @@ Generate detailed AI-powered competitor intelligence reports from simple URL inp
 
 ## Tech stack
 
-- **Next.js 15** (App Router) + TypeScript
+- **Next.js 16** (App Router) + TypeScript
 - **Tailwind CSS** for styling
 - **Supabase** for auth + database
 - **Stripe** for subscriptions
 - **ScraperAPI** for website scraping
 - **Anthropic Claude** for AI report generation
+- **Resend** for transactional email (guest report drip sequences)
 
 ---
 
@@ -45,6 +46,9 @@ npm install
    - `supabase/migrations/005_production_policy_hardening.sql`
    - `supabase/migrations/006_plan_based_access.sql`
    - `supabase/migrations/007_analytics_views.sql`
+   - `supabase/migrations/008_report_sources.sql`
+   - `supabase/migrations/009_scheduled_reruns.sql`
+   - `supabase/migrations/010_guest_reports.sql`
 
    > Each migration is safe to re-run. RLS is enabled automatically by the migrations — no manual step needed.
 3. Copy your credentials from **Settings → API**:
@@ -54,7 +58,7 @@ npm install
 4. In **Authentication → URL Configuration**, add redirect URLs:
    - Local: `http://localhost:3000/auth/callback`
    - Production: `https://your-domain.com/auth/callback`
-   - If using Vercel preview deployments, add the preview callback pattern recommended by Supabase for your Vercel team/account.
+   - If using deployment previews, add the preview callback pattern recommended by your hosting provider.
 5. Set **Site URL** to your production domain.
 6. Keep **Confirm email** enabled for password signups.
 7. If you customize Supabase auth email templates, make sure confirmation links use the redirect target rather than only the Site URL, so `/auth/callback` receives the code in every environment.
@@ -63,7 +67,7 @@ npm install
 
 1. Go to [console.anthropic.com](https://console.anthropic.com) → API keys
 2. Create a key → paste as `ANTHROPIC_API_KEY`
-3. Optionally set `AI_MODEL` to override the default (`claude-sonnet-4-20250514`)
+3. Optionally set `AI_MODEL` to override the default (`claude-haiku-4-5-20251001`)
 
 ### 4. ScraperAPI
 
@@ -91,7 +95,13 @@ npm install
    - Copy the webhook signing secret → `STRIPE_WEBHOOK_SECRET`
    - For local testing: `stripe listen --forward-to localhost:3000/api/billing/webhook`
 
-### 6. Configure env
+### 6. Resend
+
+1. Sign up at [resend.com](https://resend.com) and verify your sending domain
+2. Copy your API key → `RESEND_API_KEY`
+3. The sending address is `accounts@mail.competeiq.pro` — update `lib/email.ts` if your domain differs
+
+### 7. Configure env
 
 ```bash
 cp .env.example .env.local
@@ -108,40 +118,63 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Deploy to Vercel
+## Deploy to Railway
 
 1. Push this project to a GitHub repo (ensure `.env.local` is NOT committed)
-2. Import the repo at [vercel.com](https://vercel.com)
-3. Add all environment variables from `.env.example` to the Vercel project settings
-4. Set `NEXT_PUBLIC_APP_URL` to your production domain
-5. Deploy
-6. After deploying, update your Stripe webhook URL to the production domain
-7. Update Supabase allowed redirect URLs to include the production domain
+2. Create or link the Railway project from the app root
+3. Deploy the web service using `railway.toml`
+4. Add all environment variables from `.env.example` to Railway
+5. Set `NEXT_PUBLIC_APP_URL` to your Railway or custom production domain
+6. Confirm `NEXT_PUBLIC_APP_URL` is not the Supabase project URL
+7. After deploying, update your Stripe webhook URL to the production domain
+8. Update Supabase Auth Site URL and allowed redirect URLs to include the production domain
+9. Create a separate Railway cron service that runs `npm run cron:scheduled-reruns` on `0 6 1 * *`
+
+See `docs/railway-migration-runbook.md` for the cutover checklist and billing verification steps.
 
 ---
 
-## User flow
+## User flows
 
+### Guest flow (no account needed)
+1. Visitor enters their website URL (optional) and one competitor URL on the landing page
+2. A popup prompts for their email address
+3. Report generates (~60s) and opens at `/guest-report/[token]`
+4. Visitor receives 5 emails over 7 days via Resend (report link → insights → social proof → upgrade CTA → expiry notice)
+5. Guest reports expire after 30 days; the signup CTA converts them to an account
+
+### Authenticated flow
 1. User signs up → email confirmation → redirected to `/dashboard`
 2. User fills in business name, industry, and 1–5 competitor URLs → saves
 3. User clicks **Generate AI Report** → scraping + AI analysis runs (~60s)
 4. User is redirected to the completed report page
-5. User can view and copy the report
+5. User can view, copy, and export the report as PDF
 
 ## Trial limits
 
-- New users get **1 free report**
+- New users get **1 free report** (after signup)
+- Guest users get **1 free report per email address per 24 hours** (no signup)
 - Starter is **10 reports per 30 days** at A$39/month
 - Pro is **100 reports per 30 days** at A$159/month
 - Free and Starter reports support up to 3 competitors per report; Pro supports up to 5
 
-## Not yet implemented (future work)
+## Recently shipped
 
-- PDF / CSV export
+- **Guest report flow** — generate a free report with no signup; email captured post-form
+- **5-email Resend drip sequence** — automated nurture sequence for guest report users
+- **Forgot password / reset password** — full self-serve password recovery flow
+- **Account settings page** — profile and account management for authenticated users
+- Client-ready PDF export (browser print-to-PDF with a branded cover page)
+- Scheduled monthly re-runs for paid plans, with an AI "what changed" summary
+- Evidence-backed reports — per-source scrape status and timestamps
+- "Suggest my competitors" AI suggestions
+- Stripe customer portal + in-app plan changes (upgrade/downgrade with prorations)
+
+## Future work
+
+- CSV export
 - Slack notifications
-- Scheduled / recurring reports
-- Broader platform-wide rate limiting before scaling
-- Stripe customer portal for self-service subscription management
+- Webhook-based report delivery
 
 ---
 
@@ -149,25 +182,59 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```
 app/
-  page.tsx                  # Landing page
-  (auth)/login, signup      # Auth pages
-  auth/callback/            # Supabase OAuth callback
+  page.tsx                       # Landing page (includes guest report form)
+  layout.tsx, globals.css        # Root layout + global styles
+  guest-report/[token]/          # Public guest report view (no auth, token = credential)
+  (auth)/
+    login/, signup/              # Auth pages
+    forgot-password/             # Request password reset email
+    reset-password/              # Set new password via reset link
+    email-confirmed/             # Post-confirmation landing page
+  auth/callback/                 # Supabase OAuth callback
   (dashboard)/
-    layout.tsx              # Dashboard shell + nav
-    dashboard/              # Main dashboard
-    reports/                # Report list + detail pages
-    billing/                # Stripe billing page
+    layout.tsx                   # Dashboard shell + nav
+    dashboard/                   # Main dashboard
+    reports/                     # Report list + [id] detail pages
+    billing/                     # Stripe billing page
+    settings/                    # Account settings (profile, account management)
+  legal/                         # Legal pages (terms, privacy, etc.)
+  sample-reports/                # Marketing: example reports
+  use-cases/                     # Marketing: per-industry use cases
+  research-sources/              # Marketing: how reports are sourced
   api/
-    business/save/          # Server route: save business + competitors
-    reports/generate/       # Core: scrape → AI → save report
-    billing/checkout/       # Stripe checkout session
-    billing/webhook/        # Stripe subscription event handler
-components/                 # Shared UI components
+    business/save/               # Save business + competitors
+    business/schedule/           # Toggle scheduled monthly re-runs
+    competitors/suggest/         # AI "suggest my competitors"
+    reports/generate/            # Core: scrape → AI → save report (authenticated)
+    reports/generate-guest/      # Guest report generation (no auth, rate-limited by email + IP)
+    cron/scheduled-reruns/       # Scheduler endpoint for monthly re-runs
+    billing/checkout/            # Stripe checkout session
+    billing/portal/              # Stripe customer portal session
+    billing/change-plan/         # Upgrade/downgrade with prorations
+    billing/cancel/              # Cancel subscription
+    billing/webhook/             # Stripe subscription event handler
+components/                      # Shared UI components
+  GuestReportForm.tsx            # Landing page URL input form
+  EmailCaptureModal.tsx          # Email popup + loading state for guest flow
 lib/
-  supabase/                 # Browser / server / admin / middleware clients
-  ai.ts                     # Claude AI report generation
-  scraper.ts                # ScraperAPI scraping
-  validateUrl.ts            # Server-side URL validation
-  types.ts                  # TypeScript interfaces
-supabase/migrations/        # SQL schema + security migrations
+  supabase/                      # Browser / server / admin / middleware clients
+  ai.ts                          # Claude AI report generation
+  reportRunner.ts                # Shared scrape → AI → validate core (authenticated)
+  guestReportRunner.ts           # Guest scrape → AI → validate (no DB competitor rows)
+  reportSources.ts               # Per-report source evidence
+  email.ts                       # Resend integration: 5-email guest drip sequence
+  appUrl.ts                      # Centralised production URL helper
+  scraper.ts                     # ScraperAPI scraping
+  validateUrl.ts                 # Server-side URL validation (SSRF guard)
+  plans.ts                       # Plan config + Stripe price allowlist
+  usage.ts, rateLimit.ts         # Quotas + rate limiting
+  schedule.ts, whatChanged.ts    # Scheduled re-runs + "what changed" diff
+  changeSummary.ts               # Pure snapshot/diff helpers
+  suggestCompetitors.ts          # AI competitor suggestions
+  competitorSuggestions.ts       # Pure parsing/dedupe for suggestions
+  export.ts                      # Client-ready export helpers
+  legal.ts, sampleReports.ts     # Marketing content loaders
+  agentOps*.ts                   # Draft-only agent-ops harness (not live)
+  types.ts                       # TypeScript interfaces
+supabase/migrations/             # SQL schema + security migrations (001–010)
 ```

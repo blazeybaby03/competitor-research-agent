@@ -1,8 +1,10 @@
 # Launch Readiness Checklist — CompeteIQ
 
-Target launch: Friday morning, 5 June 2026
+> **Status: Launched.** The app went live at competeiq.pro in June 2026. This checklist is kept as a historical record of pre-launch work. Items below may or may not have been explicitly checked off before launch.
 
-Payment confidence deadline: Thursday, 5pm
+~~Target launch: Friday morning, 5 June 2026~~
+
+~~Payment confidence deadline: Thursday, 5pm~~
 
 ## Phase 1 — Code quality and hidden-error audit
 
@@ -15,7 +17,9 @@ Payment confidence deadline: Thursday, 5pm
 - [ ] Add test scripts if missing.
 - [ ] Confirm no secrets are committed.
 - [ ] Confirm `.env.local` is ignored.
-- [ ] Confirm Vercel build settings match the repo.
+- [ ] Confirm Railway build/start settings match `railway.toml`.
+- [ ] Confirm `NEXT_PUBLIC_APP_URL` is the production app host and not the Supabase project URL.
+- [ ] Confirm Supabase Auth Site URL and allowed redirect URLs use the production app host.
 
 ### Auth and dashboard flow
 
@@ -53,26 +57,33 @@ Payment confidence deadline: Thursday, 5pm
 
 ### Stripe checkout
 
-- [ ] Confirm live Pro product exists in Stripe.
-- [ ] Confirm `$79/mo` price is correct.
-- [ ] Confirm `STRIPE_GROWTH_PRICE_ID` matches Stripe.
+- [ ] Confirm live Starter and Pro products exist in Stripe.
+- [ ] Confirm the `A$39/mo` Starter price is correct.
+- [ ] Confirm the `A$159/mo` Pro price is correct.
+- [ ] Confirm `STRIPE_STARTER_PRICE_ID` matches the Starter price in Stripe.
+- [ ] Confirm `STRIPE_GROWTH_PRICE_ID` matches the Pro price in Stripe.
+- [ ] Confirm only configured plan price IDs are accepted (server-side allowlist).
 - [ ] Confirm checkout route rejects logged-out users.
 - [ ] Confirm checkout route rejects missing price ID.
 - [ ] Confirm checkout route rejects unknown price ID.
 - [ ] Confirm checkout creates a subscription checkout session.
 - [ ] Confirm success URL returns to `/billing?success=true`.
 - [ ] Confirm cancel URL returns to `/billing?canceled=true`.
+- [ ] Confirm neither checkout nor portal return URLs contain `yzwkvwcflnnwrcyadqzv.supabase.co`.
 
 ### Stripe webhook
 
 - [ ] Confirm production webhook points to `/api/billing/webhook`.
-- [ ] Confirm webhook secret is installed in Vercel.
+- [ ] Confirm webhook secret is installed in the production hosting environment.
 - [ ] Confirm missing Stripe signature is rejected.
 - [ ] Confirm invalid signature is rejected.
 - [ ] Confirm `customer.subscription.created` marks profile active.
 - [ ] Confirm `customer.subscription.updated` updates profile status.
 - [ ] Confirm `customer.subscription.deleted` marks profile canceled.
-- [ ] Confirm active subscribers can generate up to 100 reports per 30 days.
+- [ ] Confirm the stored plan (`starter`/`pro`) is synced from the subscription's price ID.
+- [ ] Confirm Starter subscribers can generate up to 10 reports per 30 days.
+- [ ] Confirm Pro subscribers can generate up to 100 reports per 30 days.
+- [ ] Confirm plan changes (upgrade/downgrade) reprice with prorations.
 - [ ] Confirm canceled users lose paid report access.
 
 ### Stripe payouts
