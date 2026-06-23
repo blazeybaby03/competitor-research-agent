@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { AppUrlConfigError, getAppBaseUrl } from "@/lib/appUrl";
 import { getAllowedPriceIds, getPlanByStripePriceId } from "@/lib/plans";
 import Stripe from "stripe";
 
@@ -90,7 +91,16 @@ export async function POST(request: Request) {
     }
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  let appUrl: string;
+  try {
+    appUrl = getAppBaseUrl();
+  } catch (err) {
+    if (err instanceof AppUrlConfigError) {
+      console.error("Billing redirect configuration error:", err.message);
+      return NextResponse.json({ error: "Billing is not configured correctly" }, { status: 503 });
+    }
+    throw err;
+  }
 
   let session: Stripe.Checkout.Session;
   try {

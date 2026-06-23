@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { AppUrlConfigError, getAppBaseUrl } from "@/lib/appUrl";
 import Stripe from "stripe";
 
 function getStripe() {
@@ -29,7 +30,16 @@ export async function POST() {
     );
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  let appUrl: string;
+  try {
+    appUrl = getAppBaseUrl();
+  } catch (err) {
+    if (err instanceof AppUrlConfigError) {
+      console.error("Billing portal redirect configuration error:", err.message);
+      return NextResponse.json({ error: "Billing portal is not configured correctly" }, { status: 503 });
+    }
+    throw err;
+  }
 
   try {
     const session = await getStripe().billingPortal.sessions.create({

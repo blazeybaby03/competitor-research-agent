@@ -4,6 +4,7 @@ import MarketingFooter from "@/components/MarketingFooter";
 import MarketingNav from "@/components/MarketingNav";
 import { SampleReportPreview } from "@/components/SampleReport";
 import { sampleReports } from "@/lib/sampleReports";
+import GuestReportForm from "@/components/GuestReportForm";
 
 const useCases = [
   {
@@ -51,22 +52,24 @@ export default function LandingPage() {
           Built from live competitor website data. Structured and ready to act on —
           not a spreadsheet, not a chatbot guess.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <Link href="/signup" className="btn-primary px-8 py-3 text-base">
-            Generate your first report free →
-          </Link>
-          <Link
-            href="/login"
-            className="text-sm font-medium text-gray-500 hover:text-gray-700"
-          >
-            Already have an account? Log in
-          </Link>
+
+        {/* Inline guest report form — no signup needed */}
+        <div className="mb-4 sm:mb-5">
+          <GuestReportForm />
         </div>
+
+        <Link
+          href="/login"
+          className="inline-block text-sm font-medium text-gray-500 hover:text-gray-700 mb-6 sm:mb-8"
+        >
+          Already have an account? Log in
+        </Link>
+
         {/* Trust strip */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-400">
           <span className="flex items-center gap-1.5">
             <CheckCircle className="h-4 w-4 text-green-500" />
-            One free report, no credit card required
+            No signup required for your first report
           </span>
           <span className="flex items-center gap-1.5">
             <Shield className="h-4 w-4 text-brand-500" />

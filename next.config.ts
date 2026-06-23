@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
-import createWithVercelToolbar from "@vercel/toolbar/plugins/next";
 
 const nextConfig: NextConfig = {
-  // Config options here
+  output: "standalone",
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
-const withVercelToolbar = createWithVercelToolbar();
-export default withVercelToolbar(nextConfig);
+export default nextConfig;

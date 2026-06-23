@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BarChart3, FileText, LogOut, CreditCard, Menu, X } from "lucide-react";
+import { BarChart3, FileText, LogOut, Settings, Menu, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/types";
@@ -15,9 +15,9 @@ interface Props {
 }
 
 const navLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/billing", label: "Billing", icon: CreditCard },
+  { href: "/dashboard", label: "Dashboard", icon: BarChart3, exact: true },
+  { href: "/reports", label: "Reports", icon: FileText, exact: false },
+  { href: "/settings", label: "Settings", icon: Settings, exact: false },
 ];
 
 export default function DashboardNav({ user, profile }: Props) {
@@ -54,7 +54,7 @@ export default function DashboardNav({ user, profile }: Props) {
                 href={link.href}
                 className={clsx(
                   "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                  pathname === link.href
+                  (link.exact ? pathname === link.href : pathname.startsWith(link.href))
                     ? "bg-brand-50 text-brand-700"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 )}
@@ -109,7 +109,7 @@ export default function DashboardNav({ user, profile }: Props) {
               onClick={() => setMobileOpen(false)}
               className={clsx(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                pathname === link.href
+                (link.exact ? pathname === link.href : pathname.startsWith(link.href))
                   ? "bg-brand-50 text-brand-700"
                   : "text-gray-700 hover:bg-gray-100"
               )}

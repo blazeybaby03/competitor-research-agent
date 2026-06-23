@@ -99,7 +99,7 @@ const LEVEL_3_RULES: Level3Rule[] = [
   {
     action: "change_environment_variables",
     reason: "Environment variable changes require hard approval.",
-    pattern: /\b(env var|environment variable|\.env|vercel env|NEXT_PUBLIC_|STRIPE_|SUPABASE_|ANTHROPIC_|SCRAPERAPI_|AGENTMAIL_)\b/,
+    pattern: /\b(env var|environment variable|\.env|railway variable|NEXT_PUBLIC_|STRIPE_|SUPABASE_|ANTHROPIC_|SCRAPERAPI_|AGENTMAIL_)\b/,
   },
   {
     action: "change_production_ai_prompt",
@@ -203,7 +203,7 @@ function classifyEventType(text: string): AgentOpsEventType {
     return "report_quality";
   }
 
-  if (/\b(auth|login|signup|dashboard|vercel|deploy|deployment|build|runtime|webhook|supabase|scraperapi|anthropic|claude|report generation failed|app down)\b/.test(text)) {
+  if (/\b(auth|login|signup|dashboard|railway|deploy|deployment|build|runtime|webhook|supabase|scraperapi|anthropic|claude|report generation failed|app down)\b/.test(text)) {
     return "system_health";
   }
 

@@ -8,7 +8,7 @@ import { PLANS, resolvePlan, type PlanKey } from "@/lib/plans";
 export const maxDuration = 60;
 
 // 3 report generation attempts per user per hour.
-// Backed by the reports table — no extra infrastructure needed, works across Vercel instances.
+// Backed by the reports table — no extra infrastructure needed, works across stateless app instances.
 // Trade-off: has a small race window for truly simultaneous requests; acceptable for MVP scale.
 const RATE_LIMIT_PER_HOUR = 3;
 

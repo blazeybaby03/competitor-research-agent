@@ -110,7 +110,7 @@ test("agent ops classifier blocks production AI prompt and model changes", () =>
 test("agent ops classifier blocks Supabase RLS and environment variable changes", () => {
   const result = classify({
     title: "Supabase RLS update",
-    description: "Need to change Supabase RLS and add a Vercel env variable.",
+    description: "Need to change Supabase RLS and add a Railway variable.",
   });
 
   assert.equal(result.eventType, "security");

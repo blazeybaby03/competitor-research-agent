@@ -29,7 +29,8 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Redirect unauthenticated users away from protected routes
+  // Redirect unauthenticated users away from protected routes.
+  // /guest-report is intentionally excluded — it's public (token = auth).
   const protectedPaths = ["/dashboard", "/reports"];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)

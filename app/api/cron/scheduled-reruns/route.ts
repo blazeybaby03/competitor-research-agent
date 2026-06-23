@@ -1,5 +1,5 @@
-// Stage 4: scheduled monthly re-run engine. Invoked by a Vercel Cron job (see
-// vercel.json). Finds paid businesses with scheduling enabled that are due,
+// Stage 4: scheduled monthly re-run engine. Invoked by the configured hosting
+// scheduler. Finds paid businesses with scheduling enabled that are due,
 // re-generates their report, computes a "what changed" summary vs the previous
 // report, and records the run outcome on the business. Lightweight monthly
 // refresh — NOT a real-time monitoring suite.
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   return handle(request);
 }
 
-// Vercel Cron issues GET requests; support both.
+// Some schedulers issue GET requests; support both.
 export async function GET(request: Request) {
   return handle(request);
 }

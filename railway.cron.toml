@@ -1,0 +1,9 @@
+[build]
+builder = "RAILPACK"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm run cron:scheduled-reruns"
+cronSchedule = "0 6 1 * *"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

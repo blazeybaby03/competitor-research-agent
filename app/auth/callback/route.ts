@@ -21,7 +21,7 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = getSafeRedirectPath(searchParams.get("next"));
 
-  // Behind Vercel's load balancer the request host can be the internal
+  // Behind a hosting provider proxy, the request host can be the internal
   // forwarding host, so `origin` from request.url points at the wrong URL.
   // Honour x-forwarded-host in production so confirmation links resolve to the
   // real public domain. (Canonical Supabase SSR pattern.)
