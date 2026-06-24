@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { validateCompetitorUrl } from "@/lib/validateUrl";
 import { runReport } from "@/lib/reportRunner";
 import { PLANS, resolvePlan, type PlanKey } from "@/lib/plans";
+import { sendUsageLimitWarningEmail, sendUsageLimitReachedEmail } from "@/lib/email";
 
 export const maxDuration = 60;
 
@@ -31,12 +32,10 @@ async function isRateLimited(
   return (count ?? 0) >= RATE_LIMIT_PER_HOUR;
 }
 
-async function isMonthlyQuotaExceeded(
+async function getMonthlyReportCount(
   adminSupabase: ReturnType<typeof createAdminClient>,
-  userId: string,
-  plan: PlanKey
-): Promise<boolean> {
-  const quota = PLANS[plan].reportLimit;
+  userId: string
+): Promise<number> {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { count, error } = await adminSupabase
     .from("reports")
@@ -46,10 +45,10 @@ async function isMonthlyQuotaExceeded(
 
   if (error) {
     console.error("Monthly quota check error:", error);
-    return false; // fail open
+    return 0; // fail open — allow on DB error
   }
 
-  return (count ?? 0) >= quota;
+  return count ?? 0;
 }
 
 export async function POST(request: Request) {
@@ -73,6 +72,23 @@ export async function POST(request: Request) {
 
   const adminSupabase = createAdminClient();
 
+  // Require an active paid subscription — free trials are replaced by the guest report flow.
+  const { data: profileForQuota } = await adminSupabase
+    .from("profiles")
+    .select("subscription_status, plan")
+    .eq("id", user.id)
+    .single();
+
+  if (profileForQuota?.subscription_status !== "active") {
+    return NextResponse.json(
+      { error: "An active subscription is required to generate reports. Choose a plan to get started." },
+      { status: 403 }
+    );
+  }
+
+  const plan = resolvePlan(profileForQuota.subscription_status, profileForQuota.plan);
+  const planConfig = PLANS[plan];
+
   // Rate limit check — runs before any expensive work
   if (await isRateLimited(adminSupabase, user.id)) {
     return NextResponse.json(
@@ -81,24 +97,32 @@ export async function POST(request: Request) {
     );
   }
 
-  // Monthly quota check for active subscribers (trial users use the credit system)
-  const { data: profileForQuota } = await adminSupabase
-    .from("profiles")
-    .select("subscription_status, plan")
-    .eq("id", user.id)
-    .single();
-  const plan = resolvePlan(profileForQuota?.subscription_status, profileForQuota?.plan);
-  const planConfig = PLANS[plan];
-
-  if (
-    profileForQuota?.subscription_status === "active" &&
-    (await isMonthlyQuotaExceeded(adminSupabase, user.id, plan))
-  ) {
+  // Monthly quota check for active subscribers
+  const monthlyCount = await getMonthlyReportCount(adminSupabase, user.id);
+  if (monthlyCount >= planConfig.reportLimit) {
+    // Fire "limit reached" email on the first attempt past the quota (exact hit only).
+    // Subsequent 403s on the same count don't resend — count can't exceed reportLimit
+    // because we enforce it here. Fire-and-forget; never block the response.
+    if (monthlyCount === planConfig.reportLimit && user.email) {
+      const resetDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toLocaleDateString("en-AU", { month: "long", day: "numeric" });
+      sendUsageLimitReachedEmail(user.email, planConfig.name, resetDate).catch((err) =>
+        console.error("Usage limit reached email failed:", err)
+      );
+    }
     return NextResponse.json(
-      {
-        error: `Report limit reached. Your ${planConfig.name} plan includes ${planConfig.reportLimit} reports per 30 days.`,
-      },
+      { error: `Report limit reached. Your ${planConfig.name} plan includes ${planConfig.reportLimit} reports per 30 days.` },
       { status: 403 }
+    );
+  }
+
+  // 80% usage warning — fires exactly once per billing period (when this report
+  // would be the warningThreshold-th report). No DB flag needed: the condition
+  // monthlyCount + 1 === warningThreshold is only true for one specific count.
+  const warningThreshold = Math.ceil(planConfig.reportLimit * 0.8);
+  if (monthlyCount + 1 === warningThreshold && user.email) {
+    sendUsageLimitWarningEmail(user.email, warningThreshold, planConfig.reportLimit, planConfig.name).catch((err) =>
+      console.error("Usage warning email failed:", err)
     );
   }
 
@@ -146,8 +170,6 @@ export async function POST(request: Request) {
     validatedCompetitors.push({ id: c.id, url: check.normalized });
   }
 
-  // Create the report row FIRST — before consuming the trial credit.
-  // This prevents a user losing their free trial if the DB insert fails.
   const { data: report, error: reportError } = await supabase
     .from("reports")
     .insert({
@@ -164,31 +186,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create report record" }, { status: 500 });
   }
 
-  // Atomic trial credit consumption via service role
-  const { data: creditResult, error: creditError } = await adminSupabase
-    .rpc("try_consume_trial_credit", { p_user_id: user.id });
-
-  if (creditError || creditResult === "exhausted") {
-    // Clean up the pending report so the user list stays accurate
-    await adminSupabase.from("reports").delete().eq("id", report.id);
-
-    if (creditError) {
-      console.error("Trial credit RPC error:", creditError);
-      return NextResponse.json({ error: "Failed to verify trial status" }, { status: 500 });
-    }
-    return NextResponse.json(
-      { error: "Trial limit reached. Please upgrade to continue." },
-      { status: 403 }
-    );
-  }
-  // creditResult === 'subscriber' | 'consumed' — both proceed.
-  // Track whether we consumed a trial credit so we can restore it on failure.
-  // A user should not lose their free trial due to a scraping or AI error.
-  const trialCreditConsumed = creditResult === "consumed";
-
   try {
-    // Scrape + persist scrape jobs + build source evidence + run the AI.
-    // Shared with the scheduled cron via lib/reportRunner (single source of truth).
     const { reportContent, sources } = await runReport(
       adminSupabase,
       business,
@@ -222,7 +220,6 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("Report generation failed:", err);
 
-    // Mark report as failed — use service role so the update is never blocked by RLS
     const { error: failError } = await adminSupabase
       .from("reports")
       .update({
@@ -232,14 +229,6 @@ export async function POST(request: Request) {
       })
       .eq("id", report.id);
     if (failError) console.error("Failed to mark report as failed:", failError);
-
-    // Restore the trial credit if we consumed one — the user should not lose
-    // their free trial due to a scraping or AI failure outside their control.
-    if (trialCreditConsumed) {
-      const { error: restoreError } = await adminSupabase
-        .rpc("restore_trial_credit", { p_user_id: user.id });
-      if (restoreError) console.error("Failed to restore trial credit:", restoreError);
-    }
 
     return NextResponse.json(
       { error: "Report generation failed. Please try again." },

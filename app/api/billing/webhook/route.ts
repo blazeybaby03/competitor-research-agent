@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getPlanByStripePriceId } from "@/lib/plans";
+import { getPlanByStripePriceId, PLANS } from "@/lib/plans";
+import { sendWelcomeEmail, scheduleOnboardingSequence, scheduleCancellationSequence } from "@/lib/email";
 import Stripe from "stripe";
 
 // Stripe statuses that grant full access
@@ -91,12 +92,30 @@ export async function POST(request: Request) {
         profileUpdate.plan = "free";
       }
 
-      const { error } = await adminSupabase
+      const { data: updatedProfile, error } = await adminSupabase
         .from("profiles")
         .update(profileUpdate)
-        .eq("id", userId);
+        .eq("id", userId)
+        .select("email, subscription_status")
+        .single();
 
-      if (error) console.error(`Failed to update profile for user ${userId}:`, error);
+      if (error) {
+        console.error(`Failed to update profile for user ${userId}:`, error);
+      } else if (
+        event.type === "customer.subscription.created" &&
+        status === "active" &&
+        plan &&
+        updatedProfile?.email
+      ) {
+        // Send welcome email on new subscription only (not on updates).
+        sendWelcomeEmail(updatedProfile.email, PLANS[plan].name).catch((err) =>
+          console.error("Welcome email failed:", err)
+        );
+        // Schedule onboarding sequence (Days 2 and 7) to drive first report + retention.
+        scheduleOnboardingSequence(updatedProfile.email, PLANS[plan].name).catch((err) =>
+          console.error("Onboarding sequence scheduling failed:", err)
+        );
+      }
       break;
     }
 
@@ -108,6 +127,13 @@ export async function POST(request: Request) {
         break;
       }
 
+      // Fetch email and plan before nulling them so the cancellation email has context.
+      const { data: cancelledProfile } = await adminSupabase
+        .from("profiles")
+        .select("email, plan")
+        .eq("id", userId)
+        .single();
+
       const { error } = await adminSupabase
         .from("profiles")
         .update({
@@ -117,7 +143,14 @@ export async function POST(request: Request) {
         })
         .eq("id", userId);
 
-      if (error) console.error(`Failed to cancel profile for user ${userId}:`, error);
+      if (error) {
+        console.error(`Failed to cancel profile for user ${userId}:`, error);
+      } else if (cancelledProfile?.email) {
+        const planName = cancelledProfile.plan === "pro" ? PLANS.pro.name : PLANS.starter.name;
+        scheduleCancellationSequence(cancelledProfile.email, planName).catch((err) =>
+          console.error("Cancellation sequence scheduling failed:", err)
+        );
+      }
       break;
     }
 
