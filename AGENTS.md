@@ -4,6 +4,14 @@
 
 Maintain and grow a live Next.js SaaS at competeiq.pro. Prioritise revenue safety, customer trust, and production stability. The app is deployed on Railway and serving real users.
 
+## Production state
+
+- Live at competeiq.pro since June 7–8, 2026, deployed on Railway
+- Supabase project: yzwkvwcflnnwrcyadqzv (ap-southeast-2)
+- Serving real users: no changes to auth, billing, or rate-limiting without explicit review
+- 0 paying customers as of June 20, 2026; first revenue target is A$39/month STARTER by July 20, 2026
+- All core features shipped: guest report flow, 5-email drip, evidence-backed reports, suggest competitors, scheduled re-runs, PDF export, in-app plan changes
+
 This repository is a Next.js 16 App Router project using TypeScript, Tailwind CSS, Supabase auth/database, Stripe subscriptions, ScraperAPI, Anthropic Claude report generation, and Resend for transactional email.
 
 ## Development principles
@@ -55,6 +63,7 @@ If a command cannot be run because credentials or local services are missing, do
 
 ## Supabase rules
 
+- Auth hook (`/api/auth/send-email`) uses **Bearer token comparison** against `SUPABASE_HOOK_SECRET`. **Do not apply HMAC verification** — this has broken account creation before and is the wrong method for this hook.
 - Keep RLS enabled.
 - Do not allow users to update their own billing fields, subscription status, or trial report counters.
 - Use service role only in server-only routes/utilities.
@@ -72,7 +81,13 @@ If a command cannot be run because credentials or local services are missing, do
 ## Resend and email rules
 
 - All transactional email goes through Resend via `lib/email.ts` using `accounts@mail.competeiq.pro`.
-- The guest report drip sequence schedules 5 emails via Resend's `scheduledAt` API at report generation time.
+- **27-email system** across 6 sequences — full reference: `03_PRODUCT/Documentation/Email Templates/EMAIL-SYSTEM-OVERVIEW.md`.
+- Sequence triggers (never remove these without updating the sequence):
+  - **Sequence A (post-signup nurture, 4 emails)** — fired from `app/api/auth/send-email/route.ts` on `email_action_type === "signup"`
+  - **Sequence B (paid onboarding, 2 emails)** — fired from `app/api/billing/webhook/route.ts` on `customer.subscription.created`
+  - **Sequence C (usage warnings, 2 emails)** — fired from `app/api/reports/generate/route.ts` at 80% and 100% of monthly quota
+  - **Sequence D (cancellation win-back, 2 emails)** — fired from `app/api/billing/webhook/route.ts` on `customer.subscription.deleted`
+- All marketing sequence sends are fire-and-forget (`.catch(console.error)`) — they must never block or throw in a request handler.
 - Do not log email addresses in server output beyond what is needed for debugging.
 - `RESEND_API_KEY` is required in production; `lib/email.ts` throws on startup if unset.
 

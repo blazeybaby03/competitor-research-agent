@@ -10,7 +10,7 @@ Generate detailed AI-powered competitor intelligence reports from simple URL inp
 - **Stripe** for subscriptions
 - **ScraperAPI** for website scraping
 - **Anthropic Claude** for AI report generation
-- **Resend** for transactional email (guest report drip sequences)
+- **Resend** for transactional email (27 emails across 6 sequences)
 
 ---
 
@@ -100,6 +100,7 @@ npm install
 1. Sign up at [resend.com](https://resend.com) and verify your sending domain
 2. Copy your API key → `RESEND_API_KEY`
 3. The sending address is `accounts@mail.competeiq.pro` — update `lib/email.ts` if your domain differs
+4. In Supabase Dashboard → Authentication → Hooks → Add hook → **Send Email** → HTTP → URL: `https://your-domain.com/api/auth/send-email` → paste `SUPABASE_HOOK_SECRET` as the secret. This routes all auth emails through Resend instead of Supabase's built-in templates.
 
 ### 7. Configure env
 
@@ -145,23 +146,28 @@ See `docs/railway-migration-runbook.md` for the cutover checklist and billing ve
 
 ### Authenticated flow
 1. User signs up → email confirmation → redirected to `/dashboard`
-2. User fills in business name, industry, and 1–5 competitor URLs → saves
-3. User clicks **Generate AI Report** → scraping + AI analysis runs (~60s)
-4. User is redirected to the completed report page
-5. User can view, copy, and export the report as PDF
+2. Post-signup nurture sequence (4 emails over 14 days) fires automatically to convert free accounts to subscribers
+3. User upgrades via Stripe → welcome email + 2-email onboarding sequence fires (Days 2 and 7)
+4. User fills in business name, industry, and 1–5 competitor URLs → saves
+5. User clicks **Generate AI Report** → scraping + AI analysis runs (~60s)
+6. User is redirected to the completed report page
+7. User can view, copy, and export the report as PDF
+8. At 80% of monthly quota → usage warning email fires automatically
+9. Paid users can enable scheduled monthly re-runs → "what changed" email on completion
 
-## Trial limits
+## Plan limits
 
-- New users get **1 free report** (after signup)
-- Guest users get **1 free report per email address per 24 hours** (no signup)
-- Starter is **10 reports per 30 days** at A$39/month
-- Pro is **100 reports per 30 days** at A$159/month
-- Free and Starter reports support up to 3 competitors per report; Pro supports up to 5
+- Authenticated report generation requires an active subscription (guest flow handles the free report)
+- Guest users get **1 free report per email address per 24 hours** (no signup required)
+- Starter is **10 reports per 30 days** at A$39/month — up to 3 competitors per report
+- Pro is **100 reports per 30 days** at A$159/month — up to 5 competitors per report
+- Rate limit: 3 report attempts per user per hour
 
 ## Recently shipped
 
+- **Email marketing workflows** — 4 automated sequences: post-signup nurture (4 emails, Days 1/3/7/14), paid onboarding (Days 2/7), usage limit warnings (80% + reached), cancellation win-back (immediate + Day 7)
+- **27-email system** — all auth, guest drip, transactional, and marketing sequences in `lib/email.ts`; see `docs/` → Email Templates → `EMAIL-SYSTEM-OVERVIEW.md`
 - **Guest report flow** — generate a free report with no signup; email captured post-form
-- **5-email Resend drip sequence** — automated nurture sequence for guest report users
 - **Forgot password / reset password** — full self-serve password recovery flow
 - **Account settings page** — profile and account management for authenticated users
 - Client-ready PDF export (browser print-to-PDF with a branded cover page)
@@ -212,7 +218,8 @@ app/
     billing/portal/              # Stripe customer portal session
     billing/change-plan/         # Upgrade/downgrade with prorations
     billing/cancel/              # Cancel subscription
-    billing/webhook/             # Stripe subscription event handler
+    billing/webhook/             # Stripe subscription event handler (triggers onboarding + cancellation sequences)
+    auth/send-email/             # Supabase auth hook → Resend (triggers post-signup nurture on signup)
 components/                      # Shared UI components
   GuestReportForm.tsx            # Landing page URL input form
   EmailCaptureModal.tsx          # Email popup + loading state for guest flow
@@ -222,7 +229,7 @@ lib/
   reportRunner.ts                # Shared scrape → AI → validate core (authenticated)
   guestReportRunner.ts           # Guest scrape → AI → validate (no DB competitor rows)
   reportSources.ts               # Per-report source evidence
-  email.ts                       # Resend integration: 5-email guest drip sequence
+  email.ts                       # Resend integration: 27-email system (auth, guest drip, marketing sequences A–D)
   appUrl.ts                      # Centralised production URL helper
   scraper.ts                     # ScraperAPI scraping
   validateUrl.ts                 # Server-side URL validation (SSRF guard)
