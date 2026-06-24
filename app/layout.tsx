@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
+import Script from "next/script";
 import AuthErrorHandler from "@/components/AuthErrorHandler";
 import "./globals.css";
 
@@ -41,6 +42,12 @@ export default function RootLayout({
           <AuthErrorHandler />
         </Suspense>
         {children}
+        <Script
+          defer
+          data-domain="competeiq.pro"
+          src="https://plausible.io/js/script.tagged-events.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
