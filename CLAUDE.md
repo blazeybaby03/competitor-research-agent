@@ -21,4 +21,4 @@ Windows machine. Use PowerShell for shell operations. Prefer MCP-based auth over
 - 3 accounts total: 1 real external user, 1 founder (blazeybaby@pm.me), 1 agent test account (agent-codex@agentmail.to)
 - 0 paying customers; A$0 revenue as of June 20, 2026
 - First revenue target: 1 STARTER subscriber (A$39/mo) by July 20, 2026
-- All core product features shipped: guest report flow, 27-email system (post-signup nurture, paid onboarding, usage warnings, cancellation win-back, guest drip, auth emails), evidence-backed reports, suggest competitors, scheduled monthly re-runs with "what changed" summary, PDF export, in-app plan changes
+- All core product features shipped: guest report flow, 27-email system (post-signup nurture, paid onboarding, usage warnings, cancellation win-back, guest drip, auth emails), Plausible Analytics (@plausible-analytics/tracker — dynamic import in useEffect, see components/Analytics.tsx), evidence-backed reports, suggest competitors, scheduled monthly re-runs with "what changed" summary, PDF export, in-app plan changes

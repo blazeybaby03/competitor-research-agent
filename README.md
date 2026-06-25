@@ -165,6 +165,7 @@ See `docs/railway-migration-runbook.md` for the cutover checklist and billing ve
 
 ## Recently shipped
 
+- **Plausible Analytics** — `@plausible-analytics/tracker` npm package; `components/Analytics.tsx` initialises via dynamic `import()` in `useEffect` (required to avoid `location.href` SSR error); custom event helpers in `lib/analytics.ts`
 - **Email marketing workflows** — 4 automated sequences: post-signup nurture (4 emails, Days 1/3/7/14), paid onboarding (Days 2/7), usage limit warnings (80% + reached), cancellation win-back (immediate + Day 7)
 - **27-email system** — all auth, guest drip, transactional, and marketing sequences in `lib/email.ts`; see `docs/` → Email Templates → `EMAIL-SYSTEM-OVERVIEW.md`
 - **Guest report flow** — generate a free report with no signup; email captured post-form
