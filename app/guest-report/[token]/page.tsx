@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import ReportView from "@/components/ReportView";
+import GuestUpgradeBar from "@/components/GuestUpgradeBar";
 import MarketingNav from "@/components/MarketingNav";
 import MarketingFooter from "@/components/MarketingFooter";
 import type { Report } from "@/lib/types";
@@ -85,22 +86,13 @@ export default async function GuestReportPage({ params }: Props) {
     <>
       <MarketingNav />
       <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
-          {/* Signup banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg bg-brand-50 border border-brand-100 px-4 py-3 mb-6 no-print">
-            <p className="text-sm text-brand-800">
-              <span className="font-semibold">Save this report and monitor competitors monthly.</span>{" "}
-              Create a free account — no credit card required.
-            </p>
-            <Link href="/signup" className="btn-primary text-sm shrink-0">
-              Create free account →
-            </Link>
-          </div>
-
+        {/* Extra bottom padding so the sticky upgrade bar doesn't overlap the footer */}
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 pb-48">
           <ReportView report={report} isActive={false} />
         </div>
       </div>
       <MarketingFooter />
+      <GuestUpgradeBar />
     </>
   );
 }

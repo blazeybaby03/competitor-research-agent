@@ -34,12 +34,9 @@ export default async function DashboardPage() {
   const isActive = profile?.subscription_status === "active";
   const planKey = resolvePlan(profile?.subscription_status, profile?.plan);
   const plan = PLANS[planKey];
-  const canGenerate =
-    profile?.subscription_status === "active" ||
-    (profile?.trial_reports_used ?? 0) < 1;
+  const canGenerate = isActive;
 
   const usage = isActive ? await getReportUsage(supabase, user!.id, planKey) : null;
-  const trialUsed = Math.min(profile?.trial_reports_used ?? 0, 1);
   const usageResetText =
     usage?.nextResetAt
       ? `next slot frees ${new Date(usage.nextResetAt).toLocaleDateString("en-GB", {
@@ -65,39 +62,25 @@ export default async function DashboardPage() {
             {plan.name} plan — {plan.reportLimit} reports per 30 days active.
           </p>
         </div>
-      ) : (profile?.trial_reports_used ?? 0) >= 1 ? (
-        <div className="flex items-center justify-between gap-4 rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3">
-          <p className="text-sm font-medium text-yellow-900">
-            You&apos;ve used your free report.{" "}
-            <Link href="/billing" className="underline hover:no-underline">
-              View plans
-            </Link>{" "}
-            to keep generating competitor reports.
-          </p>
-        </div>
       ) : (
-        <div className="flex items-center gap-3 rounded-lg bg-brand-50 border border-brand-100 px-4 py-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg bg-brand-50 border border-brand-100 px-4 py-3">
           <p className="text-sm text-brand-800">
-            <span className="font-semibold">1 free report remaining.</span>{" "}
-            No credit card required to generate it.
+            <span className="font-semibold">Subscribe to start generating reports.</span>{" "}
+            Starter gives you 10 reports per 30 days — Pro gives you 100 with up to 5 competitors each.
           </p>
+          <Link href="/billing" className="btn-primary text-sm shrink-0">
+            See plans →
+          </Link>
         </div>
       )}
 
-      {/* Usage tracking */}
-      {usage ? (
+      {/* Usage tracking (active subscribers only) */}
+      {usage && (
         <UsageMeter
           used={usage.used}
           limit={usage.limit}
           title={`Reports this cycle — ${plan.name} plan`}
           footnote={usageResetText}
-        />
-      ) : (
-        <UsageMeter
-          used={trialUsed}
-          limit={1}
-          title="Free report"
-          footnote="1 lifetime free report"
         />
       )}
 
@@ -130,8 +113,6 @@ export default async function DashboardPage() {
               competitorCount={
                 (business as { competitors?: unknown[] }).competitors?.length ?? 0
               }
-              trialReportsUsed={profile?.trial_reports_used ?? 0}
-              subscriptionStatus={profile?.subscription_status ?? "trial"}
               planName={plan.name}
               competitorLimit={plan.competitorLimit}
               proCompetitorLimit={PLANS.pro.competitorLimit}

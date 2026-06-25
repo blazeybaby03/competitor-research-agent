@@ -7,8 +7,6 @@ import { Sparkles, AlertCircle } from "lucide-react";
 interface Props {
   businessId: string;
   competitorCount: number;
-  trialReportsUsed: number;
-  subscriptionStatus: string;
   planName: string;
   competitorLimit: number;
   proCompetitorLimit: number;
@@ -24,8 +22,6 @@ const loadingSteps = [
 export default function GenerateReportButton({
   businessId,
   competitorCount,
-  trialReportsUsed,
-  subscriptionStatus,
   planName,
   competitorLimit,
   proCompetitorLimit,
@@ -34,9 +30,6 @@ export default function GenerateReportButton({
   const [loading, setLoading] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
-
-  const isTrialing = subscriptionStatus !== "active";
-  const trialRemaining = Math.max(0, 1 - trialReportsUsed);
 
   useEffect(() => {
     if (!loading) {
@@ -89,15 +82,6 @@ export default function GenerateReportButton({
 
   return (
     <div className="space-y-3">
-      {isTrialing && trialRemaining > 0 && (
-        <p className="text-xs text-gray-500">
-          {trialRemaining} free report remaining.{" "}
-          <a href="/billing" className="text-brand-600 hover:underline">
-            See Starter &amp; Pro plans →
-          </a>
-        </p>
-      )}
-
       <button
         onClick={handleGenerate}
         disabled={loading || competitorCount === 0 || competitorCount > competitorLimit}
