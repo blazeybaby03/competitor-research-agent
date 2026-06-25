@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
+import Script from "next/script";
 import AuthErrorHandler from "@/components/AuthErrorHandler";
 import "./globals.css";
 
@@ -36,14 +37,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      {/* React 19 hoists <script async src> to <head> in SSR output */}
-      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
-      <script async src="https://plausible.io/js/pa-9ZvW9lR_6Fux9LKwbktPF.js" />
       <body className={inter.className}>
         <Suspense fallback={null}>
           <AuthErrorHandler />
         </Suspense>
         {children}
+        <Script
+          src="https://plausible.io/js/pa-9ZvW9lR_6Fux9LKwbktPF.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
