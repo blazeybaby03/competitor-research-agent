@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
+import { Analytics } from "@/components/Analytics";
 import AuthErrorHandler from "@/components/AuthErrorHandler";
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({
           <AuthErrorHandler />
         </Suspense>
         {children}
+        <Analytics />
       </body>
     </html>
   );
