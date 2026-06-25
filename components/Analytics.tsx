@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
 import { init } from "@plausible-analytics/tracker";
 
-// Initialises Plausible once on client mount. bindToWindow: true (default)
-// exposes window.plausible so Plausible's verification tool can detect it.
+// Module-level init runs synchronously when this chunk is evaluated on the
+// client — more reliable than useEffect in Next.js 16 App Router.
+// typeof window guard prevents execution during SSR.
+if (typeof window !== "undefined") {
+  init({ domain: "competeiq.pro" });
+}
+
+// Component is a no-op render — all logic is in the module initialiser above.
 export function Analytics() {
-  useEffect(() => {
-    init({ domain: "competeiq.pro" });
-  }, []);
   return null;
 }
