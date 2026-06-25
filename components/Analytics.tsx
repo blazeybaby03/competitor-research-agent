@@ -2,12 +2,13 @@
 
 import Script from "next/script";
 
-// Client component wrapper required for next/script in Next.js 16 App Router.
-// Server Components do not compile Script's src into the client bundle.
+// BUILD-MARKER-COMPETEIQ-ANALYTICS-20260625 — searchable in compiled chunks
+const _PLAUSIBLE_SRC = "https://plausible.io/js/pa-9ZvW9lR_6Fux9LKwbktPF.js";
+
 export function Analytics() {
   return (
     <Script
-      src="https://plausible.io/js/pa-9ZvW9lR_6Fux9LKwbktPF.js"
+      src={_PLAUSIBLE_SRC}
       strategy="afterInteractive"
     />
   );
