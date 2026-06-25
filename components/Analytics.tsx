@@ -1,15 +1,17 @@
 "use client";
 
-import Script from "next/script";
+import { useEffect } from "react";
 
-// BUILD-MARKER-COMPETEIQ-ANALYTICS-20260625 — searchable in compiled chunks
-const _PLAUSIBLE_SRC = "https://plausible.io/js/pa-9ZvW9lR_6Fux9LKwbktPF.js";
-
+// next/script does not function in this Next.js 16 + Railpack environment.
+// Manual DOM append via useEffect is guaranteed to work regardless of
+// framework internals — this is what afterInteractive does under the hood.
 export function Analytics() {
-  return (
-    <Script
-      src={_PLAUSIBLE_SRC}
-      strategy="afterInteractive"
-    />
-  );
+  useEffect(() => {
+    if (document.querySelector('script[src*="plausible.io"]')) return; // already loaded
+    const script = document.createElement("script");
+    script.src = "https://plausible.io/js/pa-9ZvW9lR_6Fux9LKwbktPF.js";
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
+  return null;
 }
